@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vacation-calc-v1';
+const CACHE_NAME = 'vacation-calc-v4'; // تم التحديث إلى v4
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
