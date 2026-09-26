@@ -29,6 +29,9 @@
     --accent-dark: #764ba2;
     --shadow: rgba(0,0,0,0.3);
     --base-font-size: 14px;
+    --footer-bg: rgba(255,255,255,0.15);
+    --footer-text: rgba(255,255,255,0.95);
+    --footer-muted: rgba(255,255,255,0.7);
   }
 
   [data-theme="dark"] {
@@ -52,6 +55,9 @@
     --accent: #8b7fd4;
     --accent-dark: #a895e8;
     --shadow: rgba(0,0,0,0.6);
+    --footer-bg: rgba(0,0,0,0.3);
+    --footer-text: rgba(255,255,255,0.95);
+    --footer-muted: rgba(255,255,255,0.6);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
@@ -330,6 +336,96 @@
   .legend-box.work { background: var(--workday-bg); }
   .legend-box.dis { background: var(--disabled-bg); color: var(--disabled-text); border: 1px solid var(--border-color); text-decoration: line-through; font-size:0.6rem; display:flex; align-items:center; justify-content:center;}
 
+  /* ====== Footer حقوق الملكية ====== */
+  .site-footer {
+    margin-top: 20px;
+    background: var(--footer-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    color: var(--footer-text);
+    box-shadow: 0 10px 30px var(--shadow);
+    transition: background 0.5s;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  }
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+  .footer-brand .logo-icon {
+    font-size: 1.4rem;
+  }
+  .footer-brand .brand-name {
+    background: linear-gradient(135deg, #fff, #e0e0ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.5px;
+  }
+  .footer-divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    margin: 10px auto;
+  }
+  .footer-copyright {
+    font-size: 0.85rem;
+    color: var(--footer-muted);
+    line-height: 1.6;
+  }
+  .footer-copyright .year {
+    font-weight: bold;
+    color: var(--footer-text);
+  }
+  .footer-copyright .owner {
+    font-weight: bold;
+    color: var(--footer-text);
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding: 0 4px;
+  }
+  .footer-tagline {
+    font-size: 0.75rem;
+    color: var(--footer-muted);
+    margin-top: 8px;
+    font-style: italic;
+    opacity: 0.8;
+  }
+  .footer-hearts {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--footer-muted);
+  }
+  .footer-hearts .heart {
+    color: #ff6b6b;
+    animation: heartbeat 1.5s infinite;
+    display: inline-block;
+  }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+
+  /* ====== Modal ====== */
   .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -394,25 +490,12 @@
   }
   .records-table tr:hover td { background: var(--cal-hover); }
 
-  .row-actions {
-    display: flex;
-    gap: 4px;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-  }
+  .row-actions { display: flex; gap: 4px; justify-content: flex-start; flex-wrap: nowrap; }
   .row-action-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
-    color: #fff;
-    flex-shrink: 0;
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.2s; color: #fff; flex-shrink: 0;
   }
   .row-action-btn:hover { transform: translateY(-2px); }
   .row-action-btn.print { background: #3498db; }
@@ -424,22 +507,14 @@
   .row-action-btn.delete { background: transparent; color: #e74c3c; }
   .row-action-btn.delete:hover { background: rgba(231,76,60,0.15); }
 
-  .record-date { font-size: 0.75rem; color: var(--text-muted); }
-
   .print-card {
-    background: #fff;
-    color: #333;
-    padding: 30px;
-    border-radius: 12px;
-    max-width: 600px;
-    margin: 0 auto;
+    background: #fff; color: #333; padding: 30px;
+    border-radius: 12px; max-width: 600px; margin: 0 auto;
     font-family: 'Segoe UI', Tahoma, sans-serif;
   }
   .print-card-header {
-    text-align: center;
-    padding-bottom: 20px;
-    border-bottom: 3px double #667eea;
-    margin-bottom: 20px;
+    text-align: center; padding-bottom: 20px;
+    border-bottom: 3px double #667eea; margin-bottom: 20px;
   }
   .print-card-header .logo { font-size: 40px; margin-bottom: 8px; }
   .print-card-header h2 { color: #4a3f8c; font-size: 22px; margin-bottom: 4px; }
@@ -487,7 +562,7 @@
 
   @media print {
     body { background: #fff !important; padding: 0; }
-    .top-bar, .card, .modal-overlay:not(.print-mode):not(.print-individual-mode), .modal-footer, .modal-close, .toast {
+    .top-bar, .card, .site-footer, .modal-overlay:not(.print-mode):not(.print-individual-mode), .modal-footer, .modal-close, .toast {
       display: none !important;
     }
     .modal-overlay.print-mode, .modal-overlay.print-individual-mode {
@@ -531,6 +606,9 @@
     .print-row { flex-direction: column; align-items: flex-start; gap: 4px; }
     .print-row .value { text-align: right; width: 100%; }
     .row-action-btn { width: 28px; height: 28px; font-size: 12px; }
+    .site-footer { padding: 15px; }
+    .footer-brand { font-size: 1rem; }
+    .footer-copyright { font-size: 0.8rem; }
   }
 </style>
 </head>
@@ -624,6 +702,25 @@
         <div class="legend-item"><div class="legend-box dis">✕</div><span>غير مسموح</span></div>
       </div>
     </div>
+
+    <!-- ====== Footer حقوق الملكية ====== -->
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <span class="logo-icon">📅</span>
+        <span class="brand-name">حاسبة الإجازة السنوية</span>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-copyright">
+        جميع الحقوق محفوظة © <span class="year" id="currentYear"></span> - 
+        <span class="owner">Muharraqi</span>
+      </div>
+      <div class="footer-tagline">
+        نظام متكامل لحساب الإجازات السنوية بسهولة واحترافية
+      </div>
+      <div class="footer-hearts">
+        صُنع بـ <span class="heart">❤️</span> لخدمتكم
+      </div>
+    </footer>
   </div>
 
   <div class="modal-overlay" id="recordsModal">
@@ -646,7 +743,7 @@
         <button class="modal-btn danger" onclick="clearAllRecords()" id="clearAllBtn" style="display:none;">🗑️ حذف الكل</button>
       </div>
       <div class="print-footer-report">
-        تم إنشاء هذا التقرير تلقائياً من نظام حاسبة الإجازات السنوية
+        تم إنشاء هذا التقرير تلقائياً من نظام حاسبة الإجازات السنوية - جميع الحقوق محفوظة © Muharraqi
       </div>
     </div>
   </div>
@@ -682,6 +779,9 @@
   let lastEndDate = null;
   let lastReturnDate = null;
   let records = [];
+
+  // ========== تعيين السنة الحالية في الفوتر ==========
+  document.getElementById('currentYear').textContent = new Date().getFullYear();
 
   function showToast(msg, type = 'info', duration = 3000) {
     const toast = document.getElementById('toast');
@@ -1172,6 +1272,7 @@
     const format = (d) => `${d.getDate()} / ${d.getMonth() + 1} / ${d.getFullYear()}`;
     const formatFull = (d) => `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
     const skipped = countSkippedWeekends(data.endDate, data.returnDate);
+    const currentYear = new Date().getFullYear();
 
     return `
       <div class="print-card" id="printCardContent">
@@ -1213,7 +1314,7 @@
         </div>
         <div class="print-card-footer">
           <span>تاريخ الإصدار: ${data.submittedAt.getDate()}/${data.submittedAt.getMonth()+1}/${data.submittedAt.getFullYear()}</span>
-          <span>حاسبة الإجازات السنوية</span>
+          <span>© ${currentYear} Muharraqi</span>
         </div>
       </div>
     `;
@@ -1247,7 +1348,6 @@
     }, 200);
   }
 
-  // ========== إصلاح PDF باستخدام html2canvas + jsPDF ==========
   async function generatePDF(data) {
     const tempDiv = document.createElement('div');
     tempDiv.style.position = 'fixed';
@@ -1262,7 +1362,6 @@
     try {
       const element = tempDiv.querySelector('#printCardContent');
       
-      // استخدام html2canvas لتحويل العنصر لصورة
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -1272,13 +1371,12 @@
 
       const imgData = canvas.toDataURL('image/png');
       
-      // استخدام jsPDF لإنشاء PDF
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF('p', 'mm', 'a4');
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth - 20; // هامش 10mm من كل جانب
+      const imgWidth = pdfWidth - 20;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
@@ -1329,7 +1427,6 @@
     }
   }
 
-  // ========== إصلاح المشاركة ==========
   async function shareVacation(recordId = null) {
     const data = getVacationData(recordId);
     if (!data) return;
@@ -1357,17 +1454,17 @@
 📅 بداية الإجازة: ${dayNames[data.startDate.getDay()]} ${format(data.startDate)}
 🏁 نهاية الإجازة: ${dayNames[data.endDate.getDay()]} ${format(data.endDate)}
 💼 أول يوم دوام: ${dayNames[data.returnDate.getDay()]} ${format(data.returnDate)}
-⏱️ المدة: ${data.days} يوم`;
+⏱️ المدة: ${data.days} يوم
 
-      // محاولة فتح واتساب مباشرة
+─────────────
+© ${new Date().getFullYear()} Muharraqi - حاسبة الإجازات السنوية`;
+
       const encodedText = encodeURIComponent(shareText);
       const waUrl = `https://wa.me/?text=${encodedText}`;
       
-      // فتح واتساب في نافذة جديدة
       const waWindow = window.open(waUrl, '_blank');
       
       if (!waWindow || waWindow.closed || typeof waWindow.closed === 'undefined') {
-        // إذا تم حظر النافذة المنبثقة، استخدم طريقة بديلة
         window.location.href = waUrl;
       }
 
