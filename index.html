@@ -82,6 +82,60 @@
 
   .main-wrap { max-width: 560px; width: 100%; margin: 0 auto; }
 
+  /* شريط التنبيه العلوي لوضع التعديل */
+  .edit-mode-bar {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+    animation: slideDown 0.4s ease;
+    flex-wrap: wrap;
+  }
+  .edit-mode-bar.show { display: flex; }
+  @keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .edit-mode-bar .edit-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    flex: 1;
+  }
+  .edit-mode-bar .edit-info .edit-icon {
+    font-size: 1.3rem;
+    animation: bounce 1.5s infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .edit-mode-bar .cancel-edit-btn {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85rem;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .edit-mode-bar .cancel-edit-btn:hover {
+    background: rgba(255,255,255,0.4);
+  }
+
   .top-bar {
     background: var(--card-bg);
     border-radius: 16px;
@@ -287,6 +341,10 @@
     background: var(--result-bg); border: 2px dashed var(--border-color);
     border-radius: 14px; transition: 0.5s;
   }
+  .save-section.edit-mode {
+    border-color: #f39c12;
+    background: rgba(243, 156, 18, 0.08);
+  }
   .save-title {
     color: var(--text-primary); font-weight: bold; margin-bottom: 12px;
     font-size: 1rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
@@ -378,6 +436,12 @@
   }
   .save-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139,127,212,0.4); }
   .save-btn:disabled { background: var(--disabled-text); cursor: not-allowed; transform: none; }
+  .save-btn.edit-mode {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+  }
+  .save-btn.edit-mode:hover:not(:disabled) {
+    box-shadow: 0 10px 20px rgba(243, 156, 18, 0.4);
+  }
   .save-msg {
     margin-top: 10px; padding: 8px; border-radius: 8px;
     text-align: center; font-size: 0.85rem; display: none;
@@ -577,7 +641,7 @@
 
   @media print {
     body { background: #fff !important; padding: 0; }
-    .top-bar, .card, .site-footer, .modal-overlay:not(.print-mode):not(.print-individual-mode), .modal-footer, .modal-close, .toast { display: none !important; }
+    .top-bar, .card, .site-footer, .modal-overlay:not(.print-mode):not(.print-individual-mode), .modal-footer, .modal-close, .toast, .edit-mode-bar { display: none !important; }
     .modal-overlay.print-mode, .modal-overlay.print-individual-mode {
       position: static; background: #fff !important; backdrop-filter: none; display: block !important; padding: 0;
     }
@@ -615,11 +679,24 @@
     .site-footer { padding: 15px; }
     .footer-brand { font-size: 1rem; }
     .footer-copyright { font-size: 0.8rem; }
+    .edit-mode-bar { font-size: 0.85rem; padding: 10px 14px; }
   }
 </style>
 </head>
 <body>
   <div class="main-wrap">
+    
+    <!-- شريط التنبيه لوضع التعديل -->
+    <div class="edit-mode-bar" id="editModeBar">
+      <div class="edit-info">
+        <span class="edit-icon">📝</span>
+        <span>وضع التعديل مفعّل - جارٍ تعديل سجل: <strong id="editModeName">—</strong></span>
+      </div>
+      <button class="cancel-edit-btn" onclick="cancelEditMode()">
+        ✕ إلغاء التعديل
+      </button>
+    </div>
+
     <div class="top-bar">
       <div class="top-bar-group">
         <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="الوضع الليلي/النهاري">🌙</button>
@@ -675,9 +752,9 @@
         <button class="action-btn share" onclick="shareVacation()">📤 مشاركة واتساب</button>
       </div>
 
-      <div class="save-section">
+      <div class="save-section" id="saveSection">
         <div class="save-title">
-          💾 حفظ بيانات الإجازة <span class="optional">اختياري</span>
+          💾 <span id="saveTitleText">حفظ بيانات الإجازة</span> <span class="optional">اختياري</span>
           <button class="toggle-permit-btn" id="permitToggleBtn" onclick="togglePermitWarnings()" title="إظهار/إخفاء الدول التي تحتاج تصريح خاص">
             🔔 إظهار الدول التي تحتاج تصريح خاص
           </button>
@@ -782,55 +859,6 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="editModal">
-    <div class="modal" style="max-width:600px;">
-      <div class="modal-header">
-        <div class="modal-title">✏️ تعديل السجل</div>
-        <button class="modal-close" onclick="closeEditModal()">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="save-fields">
-          <div class="save-field">
-            <label>👤 الاسم</label>
-            <input type="text" id="editName" placeholder="أدخل الاسم" maxlength="50">
-          </div>
-          <div class="save-field dropdown-container">
-            <label>🌍 الدولة الأولى</label>
-            <div class="custom-select">
-              <input type="text" class="custom-select-input" id="editCountry1" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'editList1')" onfocus="showCountries(this, 'editList1')" onblur="hideCountriesDelayed('editList1')" autocomplete="off">
-              <ul class="custom-select-options" id="editList1"></ul>
-            </div>
-            <div class="permit-warning" id="editWarning1">⚠️ هذه الدولة تحتاج تصريح خاص</div>
-          </div>
-          <div class="save-field dropdown-container">
-            <label>🌍 الدولة الثانية (اختياري)</label>
-            <div class="custom-select">
-              <input type="text" class="custom-select-input" id="editCountry2" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'editList2')" onfocus="showCountries(this, 'editList2')" onblur="hideCountriesDelayed('editList2')" autocomplete="off">
-              <ul class="custom-select-options" id="editList2"></ul>
-            </div>
-            <div class="permit-warning" id="editWarning2">⚠️ هذه الدولة تحتاج تصريح خاص</div>
-          </div>
-          <div class="save-field dropdown-container">
-            <label>🌍 الدولة الثالثة (اختياري)</label>
-            <div class="custom-select">
-              <input type="text" class="custom-select-input" id="editCountry3" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'editList3')" onfocus="showCountries(this, 'editList3')" onblur="hideCountriesDelayed('editList3')" autocomplete="off">
-              <ul class="custom-select-options" id="editList3"></ul>
-            </div>
-            <div class="permit-warning" id="editWarning3">⚠️ هذه الدولة تحتاج تصريح خاص</div>
-          </div>
-          <div class="save-field">
-            <label>⏱️ عدد الأيام</label>
-            <input type="number" id="editDays" min="1" placeholder="عدد الأيام">
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-btn secondary" onclick="closeEditModal()">إلغاء</button>
-        <button class="modal-btn primary" onclick="saveEdit()">💾 حفظ التعديلات</button>
-      </div>
-    </div>
-  </div>
-
   <div class="toast" id="toast"></div>
 
 <script>
@@ -924,7 +952,7 @@
     inputElement.value = country;
     document.getElementById(listId).classList.remove('show');
     
-    const warningId = listId.replace('list', 'warning').replace('editList', 'editWarning');
+    const warningId = listId.replace('list', 'warning');
     const warningEl = document.getElementById(warningId);
     if (warningEl) {
       warningEl.style.display = (isSpecial && !hidePermitWarnings) ? 'flex' : 'none';
@@ -1213,6 +1241,9 @@
     document.getElementById('saveBtn').disabled = !(selectedDate && lastEndDate && lastReturnDate);
   }
 
+  // ==========================================
+  // 💾 حفظ / تحديث السجل (مع وضع التعديل)
+  // ==========================================
   function saveRecord() {
     if (!selectedDate || !lastEndDate || !lastReturnDate) return;
     const name = document.getElementById('empName').value.trim();
@@ -1225,6 +1256,34 @@
     const days = parseInt(document.getElementById('days').value);
     if (!name) { showSaveMsg('⚠️ الرجاء إدخال الاسم على الأقل', 'error'); return; }
     
+    // وضع التعديل
+    if (editingRecordId !== null) {
+      const recordIndex = records.findIndex(r => r.id === editingRecordId);
+      if (recordIndex === -1) {
+        showSaveMsg('❌ السجل غير موجود', 'error');
+        return;
+      }
+      
+      const record = records[recordIndex];
+      record.name = name;
+      record.countries = countries;
+      record.days = days;
+      record.startDate = selectedDate.toISOString();
+      record.endDate = lastEndDate.toISOString();
+      record.returnDate = lastReturnDate.toISOString();
+      record.submittedAt = new Date().toISOString();
+      
+      localStorage.setItem('vacationRecords', JSON.stringify(records));
+      showSaveMsg(`✅ تم تحديث بيانات "${name}" بنجاح`, 'success');
+      showToast(`✅ تم تحديث بيانات "${name}" بنجاح`, 'success', 3000);
+      
+      // الخروج من وضع التعديل
+      exitEditMode();
+      setTimeout(() => { document.getElementById('saveMsg').className = 'save-msg'; }, 3000);
+      return;
+    }
+    
+    // وضع الحفظ الجديد
     const record = {
       id: Date.now(), name, countries, days,
       startDate: selectedDate.toISOString(), endDate: lastEndDate.toISOString(),
@@ -1280,7 +1339,7 @@
           <button class="row-action-btn print" onclick="printIndividual(${r.id})" title="طباعة">🖨️</button>
           <button class="row-action-btn pdf" onclick="downloadPDF(${r.id})" title="PDF">📄</button>
           <button class="row-action-btn calendar" onclick="addToCalendar(${r.id})" title="إضافة للتقويم">📅</button>
-          <button class="row-action-btn edit" onclick="openEditModal(${r.id})" title="تعديل">✏️</button>
+          <button class="row-action-btn edit" onclick="loadRecordForEdit(${r.id})" title="تعديل">✏️</button>
           <button class="row-action-btn delete" onclick="deleteRecord(${r.id})" title="حذف">🗑️</button>
         </div></td></tr>`;
     });
@@ -1288,9 +1347,117 @@
     body.innerHTML = html;
   }
 
+  // ==========================================
+  // ✏️ تحميل السجل للتعديل في الصفحة الرئيسية
+  // ==========================================
+  function loadRecordForEdit(recordId) {
+    const record = records.find(r => r.id === recordId);
+    if (!record) { showToast('❌ السجل غير موجود', 'error'); return; }
+    
+    // إغلاق النوافذ المنبذلة إن وجدت
+    closeRecordsModal();
+    closeIndividualModal();
+    
+    editingRecordId = recordId;
+    
+    // تعبئة الحقول بالبيانات الحالية
+    document.getElementById('empName').value = record.name;
+    
+    const countries = record.countries.split(/[,،]/).map(c => c.trim()).filter(c => c && c !== '—');
+    document.getElementById('countryInput1').value = countries[0] || '';
+    document.getElementById('countryInput2').value = countries[1] || '';
+    document.getElementById('countryInput3').value = countries[2] || '';
+    
+    document.getElementById('days').value = record.days;
+    
+    // تحميل التاريخ في التقويم
+    const startDate = new Date(record.startDate);
+    selectedDate = startDate;
+    viewYear = startDate.getFullYear();
+    viewMonth = startDate.getMonth();
+    
+    // إعادة حساب التواريخ
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + (record.days - 1));
+    lastEndDate = endDate;
+    lastReturnDate = getFirstWorkday(endDate);
+    
+    // تحديث عرض المعلومات
+    const info = document.getElementById('selectedInfo');
+    info.innerHTML = `✅ البداية: <span style="color:var(--accent-dark);margin-right:5px;">${dayNames[startDate.getDay()]} ${startDate.getDate()} ${monthNames[startDate.getMonth()]} ${startDate.getFullYear()}</span>`;
+    
+    // تفعيل زر الحفظ
+    updateSaveButton();
+    
+    // تحديث واجهة وضع التعديل
+    enterEditMode(record.name);
+    
+    // إعادة رسم التقويم والنتائج
+    renderCalendar();
+    calculate();
+    
+    // التمرير لأعلى الصفحة
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    showToast(`📝 تم تحميل سجل "${record.name}" للتعديل`, 'info', 3000);
+  }
+
+  function enterEditMode(name) {
+    const bar = document.getElementById('editModeBar');
+    const saveBtn = document.getElementById('saveBtn');
+    const saveSection = document.getElementById('saveSection');
+    const saveTitleText = document.getElementById('saveTitleText');
+    
+    document.getElementById('editModeName').textContent = name;
+    bar.classList.add('show');
+    
+    saveBtn.innerHTML = '🔄 تحديث البيانات';
+    saveBtn.classList.add('edit-mode');
+    saveSection.classList.add('edit-mode');
+    saveTitleText.textContent = 'تعديل بيانات الإجازة';
+  }
+
+  function exitEditMode() {
+    const bar = document.getElementById('editModeBar');
+    const saveBtn = document.getElementById('saveBtn');
+    const saveSection = document.getElementById('saveSection');
+    const saveTitleText = document.getElementById('saveTitleText');
+    
+    bar.classList.remove('show');
+    editingRecordId = null;
+    
+    saveBtn.innerHTML = '💾 حفظ في قائمة المتقدمين';
+    saveBtn.classList.remove('edit-mode');
+    saveSection.classList.remove('edit-mode');
+    saveTitleText.textContent = 'حفظ بيانات الإجازة';
+  }
+
+  function cancelEditMode() {
+    if (!confirm('⚠️ هل أنت متأكد من إلغاء التعديل؟\nسيتم فقدان التغييرات غير المحفوظة.')) return;
+    
+    // إعادة الحقول إلى الوضع الافتراضي
+    document.getElementById('empName').value = '';
+    document.getElementById('countryInput1').value = '';
+    document.getElementById('countryInput2').value = '';
+    document.getElementById('countryInput3').value = '';
+    document.querySelectorAll('.permit-warning').forEach(el => el.style.display = 'none');
+    document.getElementById('saveMsg').className = 'save-msg';
+    
+    exitEditMode();
+    showToast('❌ تم إلغاء وضع التعديل', 'info', 2000);
+  }
+
   function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
   function deleteRecord(id) {
     if (!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
+    // إذا كان السجل المحذوف هو الذي يتم تعديله حالياً، الخروج من وضع التعديل
+    if (editingRecordId === id) {
+      exitEditMode();
+      document.getElementById('empName').value = '';
+      document.getElementById('countryInput1').value = '';
+      document.getElementById('countryInput2').value = '';
+      document.getElementById('countryInput3').value = '';
+    }
     records = records.filter(r => r.id !== id);
     localStorage.setItem('vacationRecords', JSON.stringify(records));
     updateBadge(); renderRecords();
@@ -1299,6 +1466,9 @@
     if (!confirm('⚠️ سيتم حذف جميع السجلات نهائياً. هل أنت متأكد؟')) return;
     records = []; localStorage.setItem('vacationRecords', JSON.stringify(records));
     updateBadge(); renderRecords();
+    if (editingRecordId !== null) {
+      exitEditMode();
+    }
   }
 
   function exportJSON() {
@@ -1433,77 +1603,6 @@
     setTimeout(() => { window.print(); setTimeout(() => { modal.classList.remove('print-individual-mode'); }, 500); }, 200);
   }
 
-  function openEditModal(recordId) {
-    const record = records.find(r => r.id === recordId);
-    if (!record) { showToast('❌ السجل غير موجود', 'error'); return; }
-    
-    editingRecordId = recordId;
-    
-    document.getElementById('editName').value = record.name;
-    
-    const countries = record.countries.split(/[,،]/).map(c => c.trim()).filter(c => c && c !== '—');
-    document.getElementById('editCountry1').value = countries[0] || '';
-    document.getElementById('editCountry2').value = countries[1] || '';
-    document.getElementById('editCountry3').value = countries[2] || '';
-    
-    document.getElementById('editDays').value = record.days;
-    
-    ['1', '2', '3'].forEach(num => {
-      const input = document.getElementById('editCountry' + num);
-      const warning = document.getElementById('editWarning' + num);
-      if (input && warning && input.value.trim()) {
-        const isSpecial = specialPermitCountries.some(sp => normalizeArabic(sp) === normalizeArabic(input.value.trim()));
-        warning.style.display = (isSpecial && !hidePermitWarnings) ? 'flex' : 'none';
-      } else if (warning) {
-        warning.style.display = 'none';
-      }
-    });
-    
-    document.getElementById('editModal').classList.add('show');
-  }
-
-  function closeEditModal() {
-    document.getElementById('editModal').classList.remove('show');
-    editingRecordId = null;
-  }
-
-  function saveEdit() {
-    if (!editingRecordId) return;
-    
-    const name = document.getElementById('editName').value.trim();
-    if (!name) { showToast('⚠️ الرجاء إدخال الاسم', 'error'); return; }
-    
-    const c1 = document.getElementById('editCountry1').value.trim();
-    const c2 = document.getElementById('editCountry2').value.trim();
-    const c3 = document.getElementById('editCountry3').value.trim();
-    const countries = [c1, c2, c3].filter(c => c !== '').join('، ') || '—';
-    
-    const days = parseInt(document.getElementById('editDays').value);
-    if (!days || days < 1) { showToast('⚠️ الرجاء إدخال عدد أيام صحيح', 'error'); return; }
-    
-    const recordIndex = records.findIndex(r => r.id === editingRecordId);
-    if (recordIndex === -1) { showToast('❌ السجل غير موجود', 'error'); return; }
-    
-    const record = records[recordIndex];
-    record.name = name;
-    record.countries = countries;
-    record.days = days;
-    
-    const startDate = new Date(record.startDate);
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + (days - 1));
-    const returnDate = getFirstWorkday(endDate);
-    
-    record.endDate = endDate.toISOString();
-    record.returnDate = returnDate.toISOString();
-    
-    localStorage.setItem('vacationRecords', JSON.stringify(records));
-    
-    closeEditModal();
-    renderRecords();
-    showToast('✅ تم تعديل السجل بنجاح', 'success');
-  }
-
   function addToCalendar(recordId = null) {
     const data = getVacationData(recordId);
     if (!data) return;
@@ -1626,9 +1725,6 @@ END:VCALENDAR`;
   });
   document.getElementById('individualModal').addEventListener('click', (e) => {
     if (e.target.id === 'individualModal' && !e.target.classList.contains('print-individual-mode')) closeIndividualModal();
-  });
-  document.getElementById('editModal').addEventListener('click', (e) => {
-    if (e.target.id === 'editModal') closeEditModal();
   });
 
   loadSettings(); renderCalendar();
