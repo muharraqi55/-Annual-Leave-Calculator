@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>حاسبة الإجازة السنوية</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -177,6 +177,7 @@
     padding: 30px; width: 100%;
     box-shadow: 0 20px 60px var(--shadow);
     transition: background 0.5s;
+    overflow-x: hidden; /* إضافة احتياطية لمنع الخروج الأفقي */
   }
   h1 { text-align: center; color: var(--text-primary); margin-bottom: 8px; font-size: 1.6rem; }
   .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; }
@@ -207,6 +208,7 @@
   .calendar {
     background: var(--cal-bg); border: 1px solid var(--border-color);
     border-radius: 14px; padding: 15px; margin-bottom: 20px; transition: 0.5s;
+    overflow-x: hidden; /* إضافة احتياطية لمنع الخروج الأفقي */
   }
   .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
   .cal-nav button {
@@ -666,7 +668,21 @@
   }
   .print-header-report, .print-footer-report { display: none; }
 
+  /* ==========================================
+     تحسينات خاصة للهاتف (إصلاح مشكلة الخروج من الحاوية)
+     ========================================== */
   @media (max-width: 600px) {
+    body { padding: 10px; }
+    .card { padding: 15px; } /* تقليل الحواشي لتوفير مساحة */
+    .calendar { padding: 10px; } /* تقليل حواشي التقويم */
+    
+    .cal-grid { gap: 2px; } /* تقليل المسافات بين الخلايا */
+    .cal-cell { font-size: 0.75rem; border-radius: 6px; } /* تصغير الخط تلقائياً في الهاتف */
+    .cal-day-name { font-size: 0.7rem; padding: 4px 0; } /* تصغير أسماء الأيام */
+    
+    .cal-nav button { width: 30px; height: 30px; font-size: 14px; }
+    .cal-title { font-size: 0.95rem; }
+    
     .action-buttons { grid-template-columns: 1fr; }
     .records-table { font-size: 0.75rem; }
     .records-table th, .records-table td { padding: 8px 4px; }
@@ -740,7 +756,6 @@
 
       <div class="days-row">
         <label>عدد أيام الإجازة</label>
-        <!-- تم تغيير القيمة الافتراضية هنا من 30 إلى 33 -->
         <input type="number" id="days" min="1" value="33" oninput="autoCalculate()">
       </div>
 
