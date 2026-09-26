@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>حاسبة الإجازة السنوية</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -275,9 +276,6 @@
     grid-column: 1 / -1;
   }
   .action-btn.share:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(37,211,102,0.5); }
-  .action-btn.share.no-api {
-    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-  }
 
   .save-section {
     margin-top: 25px; padding: 20px;
@@ -332,7 +330,6 @@
   .legend-box.work { background: var(--workday-bg); }
   .legend-box.dis { background: var(--disabled-bg); color: var(--disabled-text); border: 1px solid var(--border-color); text-decoration: line-through; font-size:0.6rem; display:flex; align-items:center; justify-content:center;}
 
-  /* ====== Modal ====== */
   .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -385,7 +382,6 @@
   .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
   .empty-state .icon { font-size: 3rem; margin-bottom: 10px; }
 
-  /* ====== جدول السجلات ====== */
   .records-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   .records-table th {
     background: var(--result-bg); color: var(--text-primary);
@@ -398,7 +394,6 @@
   }
   .records-table tr:hover td { background: var(--cal-hover); }
 
-  /* أزرار الإجراءات في الجدول */
   .row-actions {
     display: flex;
     gap: 4px;
@@ -431,7 +426,6 @@
 
   .record-date { font-size: 0.75rem; color: var(--text-muted); }
 
-  /* ====== بطاقة الطباعة الفردية ====== */
   .print-card {
     background: #fff;
     color: #333;
@@ -469,7 +463,6 @@
     display: flex; justify-content: space-between; font-size: 11px; color: #999;
   }
 
-  /* ====== Toast ====== */
   .toast {
     position: fixed; bottom: 30px; left: 50%;
     transform: translateX(-50%) translateY(100px);
@@ -492,7 +485,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ====== الطباعة ====== */
   @media print {
     body { background: #fff !important; padding: 0; }
     .top-bar, .card, .modal-overlay:not(.print-mode):not(.print-individual-mode), .modal-footer, .modal-close, .toast {
@@ -531,7 +523,6 @@
   @media (max-width: 600px) {
     .save-fields { grid-template-columns: 1fr; }
     .action-buttons { grid-template-columns: 1fr; }
-    .action-btn.share { grid-column: auto; }
     .records-table { font-size: 0.75rem; }
     .records-table th, .records-table td { padding: 8px 4px; }
     .modal { max-height: 90vh; }
@@ -599,7 +590,7 @@
       <div class="action-buttons" id="actionButtons" style="display:none;">
         <button class="action-btn print" onclick="printIndividual()">🖨️ طباعة</button>
         <button class="action-btn pdf" onclick="downloadPDF()">📄 تحميل PDF</button>
-        <button class="action-btn share" id="shareBtn" onclick="shareVacation()">📤 مشاركة (واتساب / ...)</button>
+        <button class="action-btn share" onclick="shareVacation()">📤 مشاركة واتساب</button>
       </div>
 
       <div class="save-section">
@@ -635,7 +626,6 @@
     </div>
   </div>
 
-  <!-- Modal الأسماء -->
   <div class="modal-overlay" id="recordsModal">
     <div class="modal">
       <div class="print-header-report">
@@ -661,7 +651,6 @@
     </div>
   </div>
 
-  <!-- Modal الطباعة الفردية -->
   <div class="modal-overlay" id="individualModal">
     <div class="modal" style="max-width:650px;">
       <div class="modal-header">
@@ -694,7 +683,6 @@
   let lastReturnDate = null;
   let records = [];
 
-  // ========== Toast ==========
   function showToast(msg, type = 'info', duration = 3000) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
@@ -702,7 +690,6 @@
     setTimeout(() => { toast.className = 'toast'; }, duration);
   }
 
-  // ========== الإعدادات ==========
   function loadSettings() {
     const theme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', theme);
@@ -716,18 +703,6 @@
       try { records = JSON.parse(savedRecords); } catch(e) { records = []; }
     }
     updateBadge();
-    checkShareSupport();
-  }
-
-  function checkShareSupport() {
-    const btn = document.getElementById('shareBtn');
-    if (navigator.share && navigator.canShare) {
-      btn.classList.remove('no-api');
-      btn.innerHTML = '📤 مشاركة (واتساب / ...)';
-    } else {
-      btn.classList.add('no-api');
-      btn.innerHTML = '📱 مشاركة عبر واتساب';
-    }
   }
 
   function toggleTheme() {
@@ -750,7 +725,6 @@
     localStorage.setItem('fontSize', newSize);
   }
 
-  // ========== حساب أيام الدوام ==========
   function getFirstWorkday(afterDate) {
     const d = new Date(afterDate);
     d.setHours(0,0,0,0);
@@ -775,7 +749,6 @@
     return count;
   }
 
-  // ========== التقويم ==========
   function renderCalendar() {
     const grid = document.getElementById('calGrid');
     const title = document.getElementById('calTitle');
@@ -975,7 +948,6 @@
     });
   }
 
-  // ========== حفظ السجلات ==========
   function updateSaveButton() {
     const btn = document.getElementById('saveBtn');
     btn.disabled = !(selectedDate && lastEndDate && lastReturnDate);
@@ -1033,7 +1005,6 @@
     }
   }
 
-  // ========== Modal الأسماء ==========
   function openRecordsModal() {
     renderRecords();
     document.getElementById('recordsModal').classList.add('show');
@@ -1067,10 +1038,6 @@
       const d = new Date(iso);
       return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
     };
-    const formatDateTime = (iso) => {
-      const d = new Date(iso);
-      return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
-    };
 
     let html = `
       <table class="records-table">
@@ -1098,7 +1065,7 @@
             <div class="row-actions">
               <button class="row-action-btn print" onclick="printIndividual(${r.id})" title="طباعة">🖨️</button>
               <button class="row-action-btn pdf" onclick="downloadPDF(${r.id})" title="تحميل PDF">📄</button>
-              <button class="row-action-btn share" onclick="shareVacation(${r.id})" title="مشاركة">📤</button>
+              <button class="row-action-btn share" onclick="shareVacation(${r.id})" title="مشاركة واتساب">📤</button>
               <button class="row-action-btn delete" onclick="deleteRecord(${r.id})" title="حذف">🗑️</button>
             </div>
           </td>
@@ -1149,7 +1116,6 @@
     showToast('✅ تم التصدير بنجاح', 'success');
   }
 
-  // ========== طباعة التقرير الكامل ==========
   function printReport() {
     if (records.length === 0) {
       showToast('⚠️ لا توجد سجلات لطباعتها', 'error');
@@ -1169,9 +1135,7 @@
     }, 300);
   }
 
-  // ========== دالة مساعدة: جلب بيانات الإجازة ==========
   function getVacationData(recordId = null) {
-    // إذا تم تمرير ID → استخدم السجل المحفوظ
     if (recordId !== null) {
       const record = records.find(r => r.id === recordId);
       if (!record) {
@@ -1189,7 +1153,6 @@
       };
     }
 
-    // وإلا → استخدم الإجازة الحالية
     if (!selectedDate || !lastEndDate || !lastReturnDate) {
       showToast('⚠️ قم بحساب الإجازة أولاً', 'error');
       return null;
@@ -1205,7 +1168,6 @@
     };
   }
 
-  // ========== بناء بطاقة الإجازة الفردية ==========
   function buildIndividualCard(data) {
     const format = (d) => `${d.getDate()} / ${d.getMonth() + 1} / ${d.getFullYear()}`;
     const formatFull = (d) => `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
@@ -1257,7 +1219,6 @@
     `;
   }
 
-  // ========== معاينة الطباعة الفردية ==========
   function printIndividual(recordId = null) {
     const data = getVacationData(recordId);
     if (!data) return;
@@ -1286,12 +1247,60 @@
     }, 200);
   }
 
-  // ========== تحميل PDF ==========
+  // ========== إصلاح PDF باستخدام html2canvas + jsPDF ==========
+  async function generatePDF(data) {
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'fixed';
+    tempDiv.style.top = '-9999px';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.width = '600px';
+    tempDiv.style.background = '#fff';
+    tempDiv.style.padding = '20px';
+    tempDiv.innerHTML = buildIndividualCard(data);
+    document.body.appendChild(tempDiv);
+
+    try {
+      const element = tempDiv.querySelector('#printCardContent');
+      
+      // استخدام html2canvas لتحويل العنصر لصورة
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      // استخدام jsPDF لإنشاء PDF
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth - 20; // هامش 10mm من كل جانب
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+      
+      const safeName = data.name.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, '_');
+      const dateStr = data.startDate.toISOString().split('T')[0];
+      const fileName = `إجازة_${safeName}_${dateStr}.pdf`;
+      
+      pdf.save(fileName);
+      
+      document.body.removeChild(tempDiv);
+      return { success: true, fileName };
+    } catch (err) {
+      document.body.removeChild(tempDiv);
+      throw err;
+    }
+  }
+
   async function downloadPDF(recordId = null) {
     const data = getVacationData(recordId);
     if (!data) return;
 
-    // زر الاستدعاء (قد يكون من الجدول أو من الأزرار العلوية)
     let btn = null;
     if (recordId !== null) {
       btn = event.target.closest('button');
@@ -1307,36 +1316,11 @@
     }
 
     try {
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'fixed';
-      tempDiv.style.top = '-9999px';
-      tempDiv.style.left = '-9999px';
-      tempDiv.style.width = '600px';
-      tempDiv.style.background = '#fff';
-      tempDiv.innerHTML = buildIndividualCard(data);
-      document.body.appendChild(tempDiv);
-
-      const element = tempDiv.querySelector('#printCardContent');
-
-      const safeName = data.name.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, '_');
-      const dateStr = data.startDate.toISOString().split('T')[0];
-      const fileName = `إجازة_${safeName}_${dateStr}.pdf`;
-
-      const opt = {
-        margin: 10,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      await html2pdf().set(opt).from(element).save();
-
-      document.body.removeChild(tempDiv);
+      const result = await generatePDF(data);
       showToast(`✅ تم تحميل PDF لـ "${data.name}"`, 'success');
     } catch (err) {
-      console.error(err);
-      showToast('❌ حدث خطأ أثناء إنشاء PDF', 'error');
+      console.error('PDF Error:', err);
+      showToast('❌ حدث خطأ أثناء إنشاء PDF: ' + err.message, 'error', 5000);
     } finally {
       if (btn) {
         btn.innerHTML = originalHTML;
@@ -1345,7 +1329,7 @@
     }
   }
 
-  // ========== مشاركة الإجازة ==========
+  // ========== إصلاح المشاركة ==========
   async function shareVacation(recordId = null) {
     const data = getVacationData(recordId);
     if (!data) return;
@@ -1354,7 +1338,7 @@
     if (recordId !== null) {
       btn = event.target.closest('button');
     } else {
-      btn = document.getElementById('shareBtn');
+      btn = document.querySelector('.action-btn.share');
     }
 
     let originalHTML = '';
@@ -1365,79 +1349,32 @@
     }
 
     try {
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'fixed';
-      tempDiv.style.top = '-9999px';
-      tempDiv.style.left = '-9999px';
-      tempDiv.style.width = '600px';
-      tempDiv.style.background = '#fff';
-      tempDiv.innerHTML = buildIndividualCard(data);
-      document.body.appendChild(tempDiv);
-
-      const element = tempDiv.querySelector('#printCardContent');
-
-      const safeName = data.name.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, '_');
-      const fileName = `إجازة_${safeName}.pdf`;
-
-      const opt = {
-        margin: 10,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      document.body.removeChild(tempDiv);
-
-      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
       const format = (d) => `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
       const shareText = `📅 تقرير إجازة سنوية
+
 👤 الاسم: ${data.name}
 🌍 الدولة: ${data.country}
-📅 بداية الإجازة: ${format(data.startDate)}
-🏁 نهاية الإجازة: ${format(data.endDate)}
-💼 أول يوم دوام: ${format(data.returnDate)}`;
+📅 بداية الإجازة: ${dayNames[data.startDate.getDay()]} ${format(data.startDate)}
+🏁 نهاية الإجازة: ${dayNames[data.endDate.getDay()]} ${format(data.endDate)}
+💼 أول يوم دوام: ${dayNames[data.returnDate.getDay()]} ${format(data.returnDate)}
+⏱️ المدة: ${data.days} يوم`;
 
-      if (navigator.share && navigator.canShare) {
-        const shareData = {
-          title: 'تقرير إجازة سنوية',
-          text: shareText,
-          files: [pdfFile]
-        };
-
-        if (navigator.canShare(shareData)) {
-          await navigator.share(shareData);
-          showToast('✅ تم المشاركة بنجاح', 'success');
-          if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-          return;
-        }
-
-        const textOnly = { title: 'تقرير إجازة سنوية', text: shareText };
-        if (navigator.canShare(textOnly)) {
-          await navigator.share(textOnly);
-          showToast('✅ تم مشاركة النص', 'info');
-          if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-          return;
-        }
-      }
-
-      // fallback
+      // محاولة فتح واتساب مباشرة
       const encodedText = encodeURIComponent(shareText);
       const waUrl = `https://wa.me/?text=${encodedText}`;
-      window.open(waUrl, '_blank');
-      showToast('📱 تم فتح واتساب', 'info', 4000);
+      
+      // فتح واتساب في نافذة جديدة
+      const waWindow = window.open(waUrl, '_blank');
+      
+      if (!waWindow || waWindow.closed || typeof waWindow.closed === 'undefined') {
+        // إذا تم حظر النافذة المنبثقة، استخدم طريقة بديلة
+        window.location.href = waUrl;
+      }
 
-      const url = URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('📱 تم فتح واتساب - انسخ النص وأرسله', 'success', 4000);
 
     } catch (err) {
-      console.error(err);
+      console.error('Share Error:', err);
       if (err.name !== 'AbortError') {
         showToast('❌ حدث خطأ أثناء المشاركة', 'error');
       }
@@ -1449,7 +1386,6 @@
     }
   }
 
-  // إغلاق modals عند النقر خارجها
   document.getElementById('recordsModal').addEventListener('click', (e) => {
     if (e.target.id === 'recordsModal' && !e.target.classList.contains('print-mode')) {
       closeRecordsModal();
@@ -1461,7 +1397,6 @@
     }
   });
 
-  // ========== التشغيل ==========
   loadSettings();
   renderCalendar();
 </script>
