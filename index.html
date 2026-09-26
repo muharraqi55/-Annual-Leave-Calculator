@@ -1114,7 +1114,7 @@
   }
 
   // ==========================================
-  // 📅 ميزة الانتقال التلقائي للتقويم
+  // 📅 ميزة الانتقال المباشر لتطبيق التقويم الأصلي
   // ==========================================
   function addToCalendar(recordId = null) {
     const data = getVacationData(recordId);
@@ -1131,23 +1131,10 @@
     dayAfterReturn.setDate(dayAfterReturn.getDate() + 1);
 
     const title = `🔔 العودة للدوام: ${data.name}`;
-    const description = `تذكير بالعودة للدوام بعد إجازة سنوية.\nالمدة: ${data.days} أيام.\nتم الإنشاء بواسطة حاسبة الإجازات - Muharraqi`;
+    const description = `تذكير بالعودة للدوام بعد إجازة سنوية.\\nالمدة: ${data.days} أيام.\\nتم الإنشاء بواسطة حاسبة الإجازات - Muharraqi`;
     const location = data.country || 'غير محدد';
 
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-    const isAndroid = /android/i.test(userAgent);
-
-    if (isAndroid) {
-      // على أندرويد: فتح Google Calendar مباشرة
-      const startDateStr = formatDateICS(returnDate);
-      const endDateStr = formatDateICS(dayAfterReturn);
-      const googleCalURL = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDateStr}/${endDateStr}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}&sf=true&output=xml`;
-      window.open(googleCalURL, '_blank');
-      showToast('📱 سيتم فتح Google Calendar...', 'success', 3000);
-    } else {
-      // على آيفون والكمبيوتر: تحميل ملف .ics
-      const icsContent = `BEGIN:VCALENDAR
+    const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Muharraqi//Vacation Calculator//AR
 BEGIN:VEVENT
@@ -1156,7 +1143,7 @@ DTSTAMP:${formatDateICS(new Date())}T000000Z
 DTSTART;VALUE=DATE:${formatDateICS(returnDate)}
 DTEND;VALUE=DATE:${formatDateICS(dayAfterReturn)}
 SUMMARY:${title}
-DESCRIPTION:${description.replace(/\n/g, '\\n')}
+DESCRIPTION:${description}
 LOCATION:${location}
 BEGIN:VALARM
 TRIGGER:-P1D
@@ -1166,6 +1153,29 @@ END:VALARM
 END:VEVENT
 END:VCALENDAR`;
 
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    const isAndroid = /android/i.test(userAgent);
+
+    if (isIOS) {
+      // على iOS: استخدام data URI سيفتح تطبيق Calendar الأصلي مباشرة
+      const encodedICS = encodeURIComponent(icsContent);
+      window.location.href = `data:text/calendar;charset=utf-8,${encodedICS}`;
+      showToast('📱 سيتم فتح تطبيق التقويم...', 'success', 3000);
+    } else if (isAndroid) {
+      // على Android: تحميل ملف .ics مع MIME type صحيح
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `تذكير_العودة.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('📱 اختر "إضافة إلى التقويم" من القائمة', 'success', 4000);
+    } else {
+      // على الكمبيوتر: تحميل ملف
       const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1175,12 +1185,7 @@ END:VCALENDAR`;
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
-      if (isIOS) {
-        showToast('📱 سيفتح تطبيق التقويم تلقائياً...', 'success', 3000);
-      } else {
-        showToast('📅 تم تحميل الملف. افتحه لإضافته للتقويم', 'success', 3000);
-      }
+      showToast('📅 تم تحميل الملف. افتحه لإضافته للتقويم', 'success', 3000);
     }
   }
 
