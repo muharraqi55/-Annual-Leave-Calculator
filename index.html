@@ -289,13 +289,38 @@
   }
   .save-title {
     color: var(--text-primary); font-weight: bold; margin-bottom: 12px;
-    font-size: 1rem; display: flex; align-items: center; gap: 8px;
+    font-size: 1rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   }
   .save-title .optional {
     font-size: 0.75rem; color: var(--text-muted); font-weight: normal;
     background: var(--input-bg); padding: 2px 8px; border-radius: 10px;
   }
-  .save-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .toggle-permit-btn {
+    margin-right: auto;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .toggle-permit-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .toggle-permit-btn.active {
+    background: #e74c3c;
+    color: #fff;
+    border-color: #c0392b;
+  }
+  .save-fields { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
   .save-field label {
     display: block; margin-bottom: 4px; font-size: 0.8rem;
     color: var(--text-secondary); font-weight: bold;
@@ -306,6 +331,45 @@
     color: var(--text-primary); transition: 0.3s;
   }
   .save-field input:focus { outline: none; border-color: var(--accent); background: var(--card-bg); }
+  
+  .dropdown-container { position: relative; }
+  .custom-select { position: relative; }
+  .custom-select-input {
+    width: 100%; padding: 10px; border: 2px solid var(--input-border);
+    border-radius: 8px; font-size: 0.9rem; background: var(--input-bg);
+    color: var(--text-primary); transition: 0.3s; cursor: text;
+  }
+  .custom-select-input:focus { outline: none; border-color: var(--accent); background: var(--card-bg); }
+  .custom-select-options {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--card-bg); border: 1px solid var(--border-color);
+    border-radius: 8px; max-height: 220px; overflow-y: auto;
+    z-index: 1000; list-style: none; padding: 0; margin: 4px 0 0 0;
+    box-shadow: 0 10px 30px var(--shadow); display: none;
+  }
+  .custom-select-options.show { display: block; animation: fadeIn 0.2s; }
+  .custom-select-options li {
+    padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+  .custom-select-options li:last-child { border-bottom: none; }
+  .custom-select-options li:hover { background: var(--cal-hover); }
+  .custom-select-options li .permit-badge {
+    font-size: 0.7rem; background: #ffe5e5; color: #c0392b;
+    padding: 2px 6px; border-radius: 4px; font-weight: bold; white-space: nowrap;
+  }
+  [data-theme="dark"] .custom-select-options li .permit-badge {
+    background: #3d2020; color: #ff6b6b;
+  }
+  .permit-warning {
+    background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3);
+    color: #c0392b; padding: 6px 10px; border-radius: 6px; margin-top: 6px;
+    display: none; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: bold;
+  }
+  [data-theme="dark"] .permit-warning { color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3); background: rgba(255, 107, 107, 0.1); }
+
   .save-btn {
     width: 100%; padding: 12px;
     background: linear-gradient(135deg, var(--accent), var(--accent-dark));
@@ -453,6 +517,8 @@
   .row-action-btn.pdf:hover { background: #c0392b; box-shadow: 0 3px 8px rgba(231,76,60,0.4); }
   .row-action-btn.calendar { background: #f39c12; }
   .row-action-btn.calendar:hover { background: #e67e22; box-shadow: 0 3px 8px rgba(243,156,18,0.4); }
+  .row-action-btn.edit { background: #f39c12; }
+  .row-action-btn.edit:hover { background: #e67e22; box-shadow: 0 3px 8px rgba(243,156,18,0.4); }
   .row-action-btn.delete { background: transparent; color: #e74c3c; }
   .row-action-btn.delete:hover { background: rgba(231,76,60,0.15); }
 
@@ -537,7 +603,6 @@
   .print-header-report, .print-footer-report { display: none; }
 
   @media (max-width: 600px) {
-    .save-fields { grid-template-columns: 1fr; }
     .action-buttons { grid-template-columns: 1fr; }
     .records-table { font-size: 0.75rem; }
     .records-table th, .records-table td { padding: 8px 4px; }
@@ -611,16 +676,45 @@
       </div>
 
       <div class="save-section">
-        <div class="save-title">💾 حفظ بيانات الإجازة <span class="optional">اختياري</span></div>
+        <div class="save-title">
+          💾 حفظ بيانات الإجازة <span class="optional">اختياري</span>
+          <button class="toggle-permit-btn" id="permitToggleBtn" onclick="togglePermitWarnings()" title="إظهار/إخفاء الدول التي تحتاج تصريح خاص">
+            🔔 إظهار الدول التي تحتاج تصريح خاص
+          </button>
+        </div>
         <div class="save-fields">
           <div class="save-field">
             <label>👤 الاسم</label>
             <input type="text" id="empName" placeholder="أدخل الاسم" maxlength="50">
           </div>
-          <div class="save-field">
-            <label>🌍 الدولة</label>
-            <input type="text" id="empCountry" placeholder="أدخل الدولة" maxlength="30">
+          
+          <div class="save-field dropdown-container">
+            <label>🌍 الدولة الأولى</label>
+            <div class="custom-select">
+              <input type="text" class="custom-select-input" id="countryInput1" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'list1')" onfocus="showCountries(this, 'list1')" onblur="hideCountriesDelayed('list1')" autocomplete="off">
+              <ul class="custom-select-options" id="list1"></ul>
+            </div>
+            <div class="permit-warning" id="warning1">⚠️ هذه الدولة تحتاج تصريح خاص</div>
           </div>
+
+          <div class="save-field dropdown-container">
+            <label>🌍 الدولة الثانية (اختياري)</label>
+            <div class="custom-select">
+              <input type="text" class="custom-select-input" id="countryInput2" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'list2')" onfocus="showCountries(this, 'list2')" onblur="hideCountriesDelayed('list2')" autocomplete="off">
+              <ul class="custom-select-options" id="list2"></ul>
+            </div>
+            <div class="permit-warning" id="warning2">⚠️ هذه الدولة تحتاج تصريح خاص</div>
+          </div>
+
+          <div class="save-field dropdown-container">
+            <label>🌍 الدولة الثالثة (اختياري)</label>
+            <div class="custom-select">
+              <input type="text" class="custom-select-input" id="countryInput3" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'list3')" onfocus="showCountries(this, 'list3')" onblur="hideCountriesDelayed('list3')" autocomplete="off">
+              <ul class="custom-select-options" id="list3"></ul>
+            </div>
+            <div class="permit-warning" id="warning3">⚠️ هذه الدولة تحتاج تصريح خاص</div>
+          </div>
+
         </div>
         <button class="save-btn" id="saveBtn" onclick="saveRecord()" disabled>💾 حفظ في قائمة المتقدمين</button>
         <div class="save-msg" id="saveMsg"></div>
@@ -688,6 +782,55 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="editModal">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <div class="modal-title">✏️ تعديل السجل</div>
+        <button class="modal-close" onclick="closeEditModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="save-fields">
+          <div class="save-field">
+            <label>👤 الاسم</label>
+            <input type="text" id="editName" placeholder="أدخل الاسم" maxlength="50">
+          </div>
+          <div class="save-field dropdown-container">
+            <label>🌍 الدولة الأولى</label>
+            <div class="custom-select">
+              <input type="text" class="custom-select-input" id="editCountry1" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'editList1')" onfocus="showCountries(this, 'editList1')" onblur="hideCountriesDelayed('editList1')" autocomplete="off">
+              <ul class="custom-select-options" id="editList1"></ul>
+            </div>
+            <div class="permit-warning" id="editWarning1">⚠️ هذه الدولة تحتاج تصريح خاص</div>
+          </div>
+          <div class="save-field dropdown-container">
+            <label>🌍 الدولة الثانية (اختياري)</label>
+            <div class="custom-select">
+              <input type="text" class="custom-select-input" id="editCountry2" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'editList2')" onfocus="showCountries(this, 'editList2')" onblur="hideCountriesDelayed('editList2')" autocomplete="off">
+              <ul class="custom-select-options" id="editList2"></ul>
+            </div>
+            <div class="permit-warning" id="editWarning2">⚠️ هذه الدولة تحتاج تصريح خاص</div>
+          </div>
+          <div class="save-field dropdown-container">
+            <label>🌍 الدولة الثالثة (اختياري)</label>
+            <div class="custom-select">
+              <input type="text" class="custom-select-input" id="editCountry3" placeholder="ابحث أو اختر دولة..." oninput="filterCountries(this, 'editList3')" onfocus="showCountries(this, 'editList3')" onblur="hideCountriesDelayed('editList3')" autocomplete="off">
+              <ul class="custom-select-options" id="editList3"></ul>
+            </div>
+            <div class="permit-warning" id="editWarning3">⚠️ هذه الدولة تحتاج تصريح خاص</div>
+          </div>
+          <div class="save-field">
+            <label>⏱️ عدد الأيام</label>
+            <input type="number" id="editDays" min="1" placeholder="عدد الأيام">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="closeEditModal()">إلغاء</button>
+        <button class="modal-btn primary" onclick="saveEdit()">💾 حفظ التعديلات</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
 <script>
@@ -705,6 +848,125 @@
   let lastEndDate = null;
   let lastReturnDate = null;
   let records = [];
+  let hidePermitWarnings = false;
+  let editingRecordId = null;
+
+  const specialPermitCountries = ["قطر", "اليمن", "العراق", "سوريا", "لبنان", "ايران", "إيران", "فلبين", "الفلبين", "تايلند", "تايلاند", "نيجيريا", "اثيوبيا", "إثيوبيا"];
+
+  const allCountries = [
+    "السعودية", "مصر", "الإمارات", "الكويت", "عمان", "البحرين", "الأردن", "فلسطين",
+    "قطر", "اليمن", "العراق", "سوريا", "لبنان", "ايران", "إيران", "تركيا", "المغرب",
+    "الجزائر", "تونس", "ليبيا", "السودان", "موريتانيا", "جيبوتي", "الصومال", "جزر القمر",
+    "فلبين", "الفلبين", "تايلند", "تايلاند", "نيجيريا", "اثيوبيا", "إثيوبيا",
+    "أمريكا", "الولايات المتحدة", "كندا", "بريطانيا", "المملكة المتحدة", "فرنسا", "ألمانيا",
+    "إيطاليا", "إسبانيا", "روسيا", "الصين", "اليابان", "كوريا الجنوبية", "الهند",
+    "باكستان", "أفغانستان", "ماليزيا", "إندونيسيا", "أستراليا", "نيوزيلندا", "البرازيل",
+    "الأرجنتين", "المكسيك", "جنوب أفريقيا", "السويد", "النرويج", "الدنمارك", "سويسرا",
+    "النمسا", "بلجيكا", "هولندا", "اليونان", "البرتغال", "أيرلندا", "بولندا", "أوكرانيا"
+  ];
+
+  function normalizeArabic(text) {
+    if (!text) return '';
+    return text.replace(/[إأآا]/g, 'ا')
+               .replace(/ى/g, 'ي')
+               .replace(/ة/g, 'ه')
+               .replace(/\s+/g, '')
+               .trim()
+               .toLowerCase();
+  }
+
+  function filterCountries(inputElement, listId) {
+    const query = normalizeArabic(inputElement.value);
+    const list = document.getElementById(listId);
+    list.innerHTML = '';
+    
+    if (query.length === 0) {
+      list.classList.remove('show');
+      return;
+    }
+
+    const matches = allCountries.filter(c => normalizeArabic(c).includes(query));
+    
+    if (matches.length === 0) {
+       list.innerHTML = '<li style="color:var(--text-muted); cursor:default; justify-content:center;">لا توجد نتائج مطابقة</li>';
+    } else {
+       matches.forEach(country => {
+         const li = document.createElement('li');
+         const isSpecial = specialPermitCountries.some(sc => normalizeArabic(sc) === normalizeArabic(country));
+         const badgeHtml = (isSpecial && !hidePermitWarnings) ? '<span class="permit-badge">تحتاج تصريح خاص</span>' : '';
+         li.innerHTML = `<span>${country}</span>${badgeHtml}`;
+         li.onclick = () => selectCountry(inputElement, listId, country, isSpecial);
+         list.appendChild(li);
+       });
+    }
+    list.classList.add('show');
+  }
+
+  function showCountries(inputElement, listId) {
+    if (inputElement.value.trim() === '') {
+       const list = document.getElementById(listId);
+       list.innerHTML = '';
+       allCountries.slice(0, 15).forEach(country => {
+         const li = document.createElement('li');
+         const isSpecial = specialPermitCountries.some(sc => normalizeArabic(sc) === normalizeArabic(country));
+         const badgeHtml = (isSpecial && !hidePermitWarnings) ? '<span class="permit-badge">تحتاج تصريح خاص</span>' : '';
+         li.innerHTML = `<span>${country}</span>${badgeHtml}`;
+         li.onclick = () => selectCountry(inputElement, listId, country, isSpecial);
+         list.appendChild(li);
+       });
+       list.classList.add('show');
+    } else {
+       filterCountries(inputElement, listId);
+    }
+  }
+
+  function selectCountry(inputElement, listId, country, isSpecial) {
+    inputElement.value = country;
+    document.getElementById(listId).classList.remove('show');
+    
+    const warningId = listId.replace('list', 'warning').replace('editList', 'editWarning');
+    const warningEl = document.getElementById(warningId);
+    if (warningEl) {
+      warningEl.style.display = (isSpecial && !hidePermitWarnings) ? 'flex' : 'none';
+    }
+    updateSaveButton();
+  }
+
+  function hideCountriesDelayed(listId) {
+    setTimeout(() => {
+      document.getElementById(listId).classList.remove('show');
+    }, 200);
+  }
+  
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.custom-select')) {
+      document.querySelectorAll('.custom-select-options').forEach(el => el.classList.remove('show'));
+    }
+  });
+
+  function togglePermitWarnings() {
+    hidePermitWarnings = !hidePermitWarnings;
+    const btn = document.getElementById('permitToggleBtn');
+    
+    if (hidePermitWarnings) {
+      btn.innerHTML = '🔕 إخفاء الدول التي تحتاج تصريح خاص';
+      btn.classList.add('active');
+      document.querySelectorAll('.permit-warning').forEach(el => el.style.display = 'none');
+      showToast('🔕 تم إخفاء تحذيرات التصريح الخاص', 'info', 2000);
+    } else {
+      btn.innerHTML = '🔔 إظهار الدول التي تحتاج تصريح خاص';
+      btn.classList.remove('active');
+      ['1', '2', '3'].forEach(num => {
+        const input = document.getElementById('countryInput' + num);
+        const warning = document.getElementById('warning' + num);
+        if (input && warning && input.value.trim()) {
+          const isSpecial = specialPermitCountries.some(sp => normalizeArabic(sp) === normalizeArabic(input.value.trim()));
+          warning.style.display = isSpecial ? 'flex' : 'none';
+        }
+      });
+      showToast('🔔 تم إظهار تحذيرات التصريح الخاص', 'info', 2000);
+    }
+  }
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -954,21 +1216,31 @@
   function saveRecord() {
     if (!selectedDate || !lastEndDate || !lastReturnDate) return;
     const name = document.getElementById('empName').value.trim();
-    const country = document.getElementById('empCountry').value.trim();
+    
+    const c1 = document.getElementById('countryInput1').value.trim();
+    const c2 = document.getElementById('countryInput2').value.trim();
+    const c3 = document.getElementById('countryInput3').value.trim();
+    const countries = [c1, c2, c3].filter(c => c !== '').join('، ') || '—';
+    
     const days = parseInt(document.getElementById('days').value);
     if (!name) { showSaveMsg('⚠️ الرجاء إدخال الاسم على الأقل', 'error'); return; }
     
     const record = {
-      id: Date.now(), name, country: country || '—',
+      id: Date.now(), name, countries, days,
       startDate: selectedDate.toISOString(), endDate: lastEndDate.toISOString(),
-      returnDate: lastReturnDate.toISOString(), days,
+      returnDate: lastReturnDate.toISOString(),
       submittedAt: new Date().toISOString()
     };
     records.unshift(record);
     localStorage.setItem('vacationRecords', JSON.stringify(records));
     updateBadge();
+    
     document.getElementById('empName').value = '';
-    document.getElementById('empCountry').value = '';
+    document.getElementById('countryInput1').value = '';
+    document.getElementById('countryInput2').value = '';
+    document.getElementById('countryInput3').value = '';
+    document.querySelectorAll('.permit-warning').forEach(el => el.style.display = 'none');
+    
     showSaveMsg(`✅ تم حفظ إجازة "${name}" بنجاح`, 'success');
     setTimeout(() => { document.getElementById('saveMsg').className = 'save-msg'; }, 3000);
   }
@@ -999,15 +1271,16 @@
       return;
     }
     const formatDate = (iso) => { const d = new Date(iso); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`; };
-    let html = `<table class="records-table"><thead><tr><th>#</th><th>الاسم</th><th>الدولة</th><th>البداية</th><th>النهاية</th><th>العودة</th><th>الأيام</th><th>الإجراءات</th></tr></thead><tbody>`;
+    let html = `<table class="records-table"><thead><tr><th>#</th><th>الاسم</th><th>الدول</th><th>البداية</th><th>النهاية</th><th>العودة</th><th>الأيام</th><th>الإجراءات</th></tr></thead><tbody>`;
     records.forEach((r, idx) => {
       html += `<tr>
-        <td>${idx + 1}</td><td><strong>${escapeHtml(r.name)}</strong></td><td>${escapeHtml(r.country)}</td>
+        <td>${idx + 1}</td><td><strong>${escapeHtml(r.name)}</strong></td><td>${escapeHtml(r.countries)}</td>
         <td>${formatDate(r.startDate)}</td><td>${formatDate(r.endDate)}</td><td>${formatDate(r.returnDate)}</td><td>${r.days}</td>
         <td><div class="row-actions">
           <button class="row-action-btn print" onclick="printIndividual(${r.id})" title="طباعة">🖨️</button>
           <button class="row-action-btn pdf" onclick="downloadPDF(${r.id})" title="PDF">📄</button>
           <button class="row-action-btn calendar" onclick="addToCalendar(${r.id})" title="إضافة للتقويم">📅</button>
+          <button class="row-action-btn edit" onclick="openEditModal(${r.id})" title="تعديل">✏️</button>
           <button class="row-action-btn delete" onclick="deleteRecord(${r.id})" title="حذف">🗑️</button>
         </div></td></tr>`;
     });
@@ -1070,30 +1343,77 @@
     setTimeout(() => { window.print(); setTimeout(() => { modal.classList.remove('print-mode'); }, 500); }, 300);
   }
 
+  function needsSpecialPermit(countriesStr) {
+    if (!countriesStr || countriesStr === '—') return false;
+    const countries = countriesStr.split(/[,،]/).map(c => c.trim());
+    return countries.some(country => 
+      specialPermitCountries.some(sp => normalizeArabic(sp) === normalizeArabic(country))
+    );
+  }
+
+  function formatCountriesWithHighlight(countriesStr) {
+    if (!countriesStr || countriesStr === '—') return '—';
+    const countries = countriesStr.split(/[,،]/).map(c => c.trim()).filter(c => c);
+    return countries.map(c => {
+      const isSpecial = specialPermitCountries.some(sp => normalizeArabic(sp) === normalizeArabic(c));
+      if (isSpecial && !hidePermitWarnings) {
+        return `<span style="color: #c0392b; text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: #c0392b; font-weight: bold;">${escapeHtml(c)}</span>`;
+      }
+      return escapeHtml(c);
+    }).join('، ');
+  }
+
   function getVacationData(recordId = null) {
     if (recordId !== null) {
       const record = records.find(r => r.id === recordId);
       if (!record) { showToast('❌ السجل غير موجود', 'error'); return null; }
-      return { name: record.name, country: record.country, startDate: new Date(record.startDate), endDate: new Date(record.endDate), returnDate: new Date(record.returnDate), days: record.days, submittedAt: new Date(record.submittedAt) };
+      return { name: record.name, countries: record.countries, startDate: new Date(record.startDate), endDate: new Date(record.endDate), returnDate: new Date(record.returnDate), days: record.days, submittedAt: new Date(record.submittedAt) };
     }
     if (!selectedDate || !lastEndDate || !lastReturnDate) { showToast('⚠️ قم بحساب الإجازة أولاً', 'error'); return null; }
-    return { name: document.getElementById('empName').value.trim() || '—', country: document.getElementById('empCountry').value.trim() || '—', startDate: selectedDate, endDate: lastEndDate, returnDate: lastReturnDate, days: parseInt(document.getElementById('days').value), submittedAt: new Date() };
+    
+    const c1 = document.getElementById('countryInput1').value.trim();
+    const c2 = document.getElementById('countryInput2').value.trim();
+    const c3 = document.getElementById('countryInput3').value.trim();
+    const countries = [c1, c2, c3].filter(c => c !== '').join('، ') || '—';
+    
+    return { name: document.getElementById('empName').value.trim() || '—', countries, startDate: selectedDate, endDate: lastEndDate, returnDate: lastReturnDate, days: parseInt(document.getElementById('days').value), submittedAt: new Date() };
   }
 
   function buildIndividualCard(data) {
     const format = (d) => `${d.getDate()} / ${d.getMonth() + 1} / ${d.getFullYear()}`;
     const formatFull = (d) => `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
     const skipped = countSkippedWeekends(data.endDate, data.returnDate);
+    const hasSpecialPermit = needsSpecialPermit(data.countries);
+    
+    let permitStatusHtml = '';
+    if (!hidePermitWarnings && hasSpecialPermit) {
+      permitStatusHtml = `
+        <div class="print-row" style="background: #ffe5e5; border: 1px solid #c0392b; border-radius: 8px; margin-top: 10px;">
+          <span class="label" style="color: #c0392b;">⚠️ تنويه هام</span>
+          <span class="value" style="color: #c0392b; font-size: 14px;">تحتوي هذه الوجهة على دول تحتاج إلى <strong>تصريح خاص</strong></span>
+        </div>
+      `;
+    }
+    
+    const permitStatusIndicator = `
+      <div class="print-row" style="background: ${hidePermitWarnings ? '#f0f0f0' : (hasSpecialPermit ? '#fff3cd' : '#d4edda')}; border-radius: 6px; margin-top: 8px; padding: 8px 12px;">
+        <span class="label" style="font-size: 12px;">🔐 حالة التصريح الخاص</span>
+        <span class="value" style="font-size: 12px; color: ${hidePermitWarnings ? '#6c757d' : (hasSpecialPermit ? '#856404' : '#155724')};">${hidePermitWarnings ? 'معطل' : (hasSpecialPermit ? 'مفعل - يحتاج تصريح' : 'مفعل - لا يحتاج')}</span>
+      </div>
+    `;
+
     return `
       <div class="print-card" id="printCardContent">
         <div class="print-card-header"><div class="logo">📅</div><h2>تقرير إجازة سنوية</h2><div class="sub">Annual Leave Report</div></div>
         <div class="print-card-body">
           <div class="print-row"><span class="label">👤 اسم الموظف</span><span class="value">${escapeHtml(data.name)}</span></div>
-          <div class="print-row"><span class="label">🌍 الدولة</span><span class="value">${escapeHtml(data.country)}</span></div>
+          <div class="print-row"><span class="label">🌍 الدولة/الدول</span><span class="value">${formatCountriesWithHighlight(data.countries)}</span></div>
           <div class="print-row"><span class="label">📅 تاريخ بداية الإجازة</span><span class="value">${formatFull(data.startDate)}</span></div>
           <div class="print-row"><span class="label">⏱️ مدة الإجازة</span><span class="value">${data.days} يوم</span></div>
           <div class="print-row end"><span class="label">🏁 آخر يوم إجازة</span><span class="value">${formatFull(data.endDate)}</span></div>
           <div class="print-row highlight"><span class="label">💼 أول يوم دوام</span><span class="value">${formatFull(data.returnDate)}</span></div>
+          ${permitStatusIndicator}
+          ${permitStatusHtml}
           ${skipped > 0 ? `<div class="print-row"><span class="label">⏭️ أيام تم تخطيها</span><span class="value">${skipped} يوم (جمعة/سبت)</span></div>` : ''}
         </div>
         <div class="print-card-footer"><span>تاريخ الإصدار: ${format(data.submittedAt)}</span><span>© ${new Date().getFullYear()} Muharraqi</span></div>
@@ -1113,9 +1433,77 @@
     setTimeout(() => { window.print(); setTimeout(() => { modal.classList.remove('print-individual-mode'); }, 500); }, 200);
   }
 
-  // ==========================================
-  // 📅 ميزة الانتقال المباشر لتطبيق التقويم الأصلي
-  // ==========================================
+  function openEditModal(recordId) {
+    const record = records.find(r => r.id === recordId);
+    if (!record) { showToast('❌ السجل غير موجود', 'error'); return; }
+    
+    editingRecordId = recordId;
+    
+    document.getElementById('editName').value = record.name;
+    
+    const countries = record.countries.split(/[,،]/).map(c => c.trim()).filter(c => c && c !== '—');
+    document.getElementById('editCountry1').value = countries[0] || '';
+    document.getElementById('editCountry2').value = countries[1] || '';
+    document.getElementById('editCountry3').value = countries[2] || '';
+    
+    document.getElementById('editDays').value = record.days;
+    
+    ['1', '2', '3'].forEach(num => {
+      const input = document.getElementById('editCountry' + num);
+      const warning = document.getElementById('editWarning' + num);
+      if (input && warning && input.value.trim()) {
+        const isSpecial = specialPermitCountries.some(sp => normalizeArabic(sp) === normalizeArabic(input.value.trim()));
+        warning.style.display = (isSpecial && !hidePermitWarnings) ? 'flex' : 'none';
+      } else if (warning) {
+        warning.style.display = 'none';
+      }
+    });
+    
+    document.getElementById('editModal').classList.add('show');
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').classList.remove('show');
+    editingRecordId = null;
+  }
+
+  function saveEdit() {
+    if (!editingRecordId) return;
+    
+    const name = document.getElementById('editName').value.trim();
+    if (!name) { showToast('⚠️ الرجاء إدخال الاسم', 'error'); return; }
+    
+    const c1 = document.getElementById('editCountry1').value.trim();
+    const c2 = document.getElementById('editCountry2').value.trim();
+    const c3 = document.getElementById('editCountry3').value.trim();
+    const countries = [c1, c2, c3].filter(c => c !== '').join('، ') || '—';
+    
+    const days = parseInt(document.getElementById('editDays').value);
+    if (!days || days < 1) { showToast('⚠️ الرجاء إدخال عدد أيام صحيح', 'error'); return; }
+    
+    const recordIndex = records.findIndex(r => r.id === editingRecordId);
+    if (recordIndex === -1) { showToast('❌ السجل غير موجود', 'error'); return; }
+    
+    const record = records[recordIndex];
+    record.name = name;
+    record.countries = countries;
+    record.days = days;
+    
+    const startDate = new Date(record.startDate);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + (days - 1));
+    const returnDate = getFirstWorkday(endDate);
+    
+    record.endDate = endDate.toISOString();
+    record.returnDate = returnDate.toISOString();
+    
+    localStorage.setItem('vacationRecords', JSON.stringify(records));
+    
+    closeEditModal();
+    renderRecords();
+    showToast('✅ تم تعديل السجل بنجاح', 'success');
+  }
+
   function addToCalendar(recordId = null) {
     const data = getVacationData(recordId);
     if (!data) return;
@@ -1131,8 +1519,8 @@
     dayAfterReturn.setDate(dayAfterReturn.getDate() + 1);
 
     const title = `🔔 العودة للدوام: ${data.name}`;
-    const description = `تذكير بالعودة للدوام بعد إجازة سنوية.\\nالمدة: ${data.days} أيام.\\nتم الإنشاء بواسطة حاسبة الإجازات - Muharraqi`;
-    const location = data.country || 'غير محدد';
+    const description = `تذكير بالعودة للدوام بعد إجازة سنوية.\\nالمدة: ${data.days} أيام.\\nالدول: ${data.countries}\\nتم الإنشاء بواسطة حاسبة الإجازات - Muharraqi`;
+    const location = data.countries || 'غير محدد';
 
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
@@ -1158,12 +1546,10 @@ END:VCALENDAR`;
     const isAndroid = /android/i.test(userAgent);
 
     if (isIOS) {
-      // على iOS: استخدام data URI سيفتح تطبيق Calendar الأصلي مباشرة
       const encodedICS = encodeURIComponent(icsContent);
       window.location.href = `data:text/calendar;charset=utf-8,${encodedICS}`;
       showToast('📱 سيتم فتح تطبيق التقويم...', 'success', 3000);
     } else if (isAndroid) {
-      // على Android: تحميل ملف .ics مع MIME type صحيح
       const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1175,7 +1561,6 @@ END:VCALENDAR`;
       URL.revokeObjectURL(url);
       showToast('📱 اختر "إضافة إلى التقويم" من القائمة', 'success', 4000);
     } else {
-      // على الكمبيوتر: تحميل ملف
       const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1226,7 +1611,10 @@ END:VCALENDAR`;
     if (btn) { btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true; }
     try {
       const format = (d) => `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
-      const shareText = `📅 تقرير إجازة سنوية\n\n👤 الاسم: ${data.name}\n🌍 الدولة: ${data.country}\n📅 بداية الإجازة: ${dayNames[data.startDate.getDay()]} ${format(data.startDate)}\n🏁 نهاية الإجازة: ${dayNames[data.endDate.getDay()]} ${format(data.endDate)}\n💼 أول يوم دوام: ${dayNames[data.returnDate.getDay()]} ${format(data.returnDate)}\n⏱️ المدة: ${data.days} يوم\n\n─────────────\n© ${new Date().getFullYear()} Muharraqi - حاسبة الإجازات السنوية`;
+      const hasSpecialPermit = needsSpecialPermit(data.countries);
+      const permitWarningText = (!hidePermitWarnings && hasSpecialPermit) ? '\n⚠️ تنويه: تحتوي هذه الوجهة على دول تحتاج إلى تصريح خاص' : '';
+      
+      const shareText = `📅 تقرير إجازة سنوية\n\n👤 الاسم: ${data.name}\n🌍 الدولة/الدول: ${data.countries}${permitWarningText}\n📅 بداية الإجازة: ${dayNames[data.startDate.getDay()]} ${format(data.startDate)}\n🏁 نهاية الإجازة: ${dayNames[data.endDate.getDay()]} ${format(data.endDate)}\n💼 أول يوم دوام: ${dayNames[data.returnDate.getDay()]} ${format(data.returnDate)}\n⏱️ المدة: ${data.days} يوم\n🔐 حالة التصريح الخاص: ${hidePermitWarnings ? 'معطل' : (hasSpecialPermit ? 'مفعل - يحتاج تصريح' : 'مفعل - لا يحتاج')}\n\n─────────────\n© ${new Date().getFullYear()} Muharraqi - حاسبة الإجازات السنوية`;
       window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
       showToast('📱 تم فتح واتساب', 'success', 3000);
     } catch (err) { showToast('❌ حدث خطأ أثناء المشاركة', 'error'); }
@@ -1238,6 +1626,9 @@ END:VCALENDAR`;
   });
   document.getElementById('individualModal').addEventListener('click', (e) => {
     if (e.target.id === 'individualModal' && !e.target.classList.contains('print-individual-mode')) closeIndividualModal();
+  });
+  document.getElementById('editModal').addEventListener('click', (e) => {
+    if (e.target.id === 'editModal') closeEditModal();
   });
 
   loadSettings(); renderCalendar();
