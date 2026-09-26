@@ -4,11 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>حاسبة الإجازة السنوية</title>
-<!-- مكتبات PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- إعدادات PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#667eea">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -608,7 +606,7 @@
       <div class="action-buttons" id="actionButtons" style="display:none;">
         <button class="action-btn print" onclick="printIndividual()">🖨️ طباعة</button>
         <button class="action-btn pdf" onclick="downloadPDF()">📄 تحميل PDF</button>
-        <button class="action-btn calendar" onclick="downloadICS()">📅 إضافة للتقويم</button>
+        <button class="action-btn calendar" onclick="addToCalendar()">📅 إضافة للتقويم</button>
         <button class="action-btn share" onclick="shareVacation()">📤 مشاركة واتساب</button>
       </div>
 
@@ -653,7 +651,6 @@
     </footer>
   </div>
 
-  <!-- حقل مخفي لاستيراد الملفات -->
   <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImport(this)">
 
   <div class="modal-overlay" id="recordsModal">
@@ -709,7 +706,6 @@
   let lastReturnDate = null;
   let records = [];
 
-  // ========== تسجيل خدمة PWA (Service Worker) ==========
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js')
@@ -1011,7 +1007,7 @@
         <td><div class="row-actions">
           <button class="row-action-btn print" onclick="printIndividual(${r.id})" title="طباعة">🖨️</button>
           <button class="row-action-btn pdf" onclick="downloadPDF(${r.id})" title="PDF">📄</button>
-          <button class="row-action-btn calendar" onclick="downloadICS(${r.id})" title="إضافة للتقويم">📅</button>
+          <button class="row-action-btn calendar" onclick="addToCalendar(${r.id})" title="إضافة للتقويم">📅</button>
           <button class="row-action-btn delete" onclick="deleteRecord(${r.id})" title="حذف">🗑️</button>
         </div></td></tr>`;
     });
@@ -1118,9 +1114,9 @@
   }
 
   // ==========================================
-  // 📅 ميزة جديدة: إنشاء ملف تقويم (.ics)
+  // 📅 ميزة الانتقال التلقائي للتقويم
   // ==========================================
-  function downloadICS(recordId = null) {
+  function addToCalendar(recordId = null) {
     const data = getVacationData(recordId);
     if (!data) return;
 
@@ -1134,7 +1130,24 @@
     const dayAfterReturn = new Date(returnDate);
     dayAfterReturn.setDate(dayAfterReturn.getDate() + 1);
 
-    const icsContent = `BEGIN:VCALENDAR
+    const title = `🔔 العودة للدوام: ${data.name}`;
+    const description = `تذكير بالعودة للدوام بعد إجازة سنوية.\nالمدة: ${data.days} أيام.\nتم الإنشاء بواسطة حاسبة الإجازات - Muharraqi`;
+    const location = data.country || 'غير محدد';
+
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    const isAndroid = /android/i.test(userAgent);
+
+    if (isAndroid) {
+      // على أندرويد: فتح Google Calendar مباشرة
+      const startDateStr = formatDateICS(returnDate);
+      const endDateStr = formatDateICS(dayAfterReturn);
+      const googleCalURL = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDateStr}/${endDateStr}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}&sf=true&output=xml`;
+      window.open(googleCalURL, '_blank');
+      showToast('📱 سيتم فتح Google Calendar...', 'success', 3000);
+    } else {
+      // على آيفون والكمبيوتر: تحميل ملف .ics
+      const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Muharraqi//Vacation Calculator//AR
 BEGIN:VEVENT
@@ -1142,22 +1155,33 @@ UID:${Date.now()}@muharraqi.app
 DTSTAMP:${formatDateICS(new Date())}T000000Z
 DTSTART;VALUE=DATE:${formatDateICS(returnDate)}
 DTEND;VALUE=DATE:${formatDateICS(dayAfterReturn)}
-SUMMARY:🔔 العودة للدوام: ${data.name}
-DESCRIPTION:تذكير بالعودة للدوام بعد إجازة سنوية.\\nالمدة: ${data.days} أيام.\\nتم الإنشاء بواسطة حاسبة الإجازات - Muharraqi
-LOCATION:${data.country || 'غير محدد'}
+SUMMARY:${title}
+DESCRIPTION:${description.replace(/\n/g, '\\n')}
+LOCATION:${location}
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:تذكير بالعودة للدوام غداً
+END:VALARM
 END:VEVENT
 END:VCALENDAR`;
 
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `تذكير_العودة_${data.name.replace(/\s+/g, '_')}.ics`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('📅 تم تحميل ملف التقويم. افتحه لإضافته لهاتفك', 'success');
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `تذكير_العودة_${data.name.replace(/\s+/g, '_')}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      if (isIOS) {
+        showToast('📱 سيفتح تطبيق التقويم تلقائياً...', 'success', 3000);
+      } else {
+        showToast('📅 تم تحميل الملف. افتحه لإضافته للتقويم', 'success', 3000);
+      }
+    }
   }
 
   async function generatePDF(data) {
