@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vacation-calc-v7'; // تم التحديث إلى v7 لضمان تحميل النسخة الجديدة
+const CACHE_NAME = 'vacation-calc-v8'; // تم التحديث إلى v7 لضمان تحميل النسخة الجديدة
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
