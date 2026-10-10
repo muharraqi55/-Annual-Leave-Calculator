@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>حاسبة الإجازة السنوية</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- مكتبات PDF تُحمَّل ديناميكياً مع 3 CDNs احتياطية داخل JS -->
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#667eea">
@@ -40,7 +39,6 @@
     --footer-text: rgba(255,255,255,0.95);
     --footer-muted: rgba(255,255,255,0.7);
   }
-
   [data-theme="dark"] {
     --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     --card-bg: #1e1e2e;
@@ -66,118 +64,61 @@
     --footer-text: rgba(255,255,255,0.95);
     --footer-muted: rgba(255,255,255,0.6);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
   html { font-size: var(--base-font-size); }
-
   body {
-    min-height: 100vh;
-    background: var(--bg-gradient);
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 20px;
-    transition: background 0.5s;
+    min-height: 100vh; background: var(--bg-gradient);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 20px; transition: background 0.5s;
   }
-
   .main-wrap { max-width: 560px; width: 100%; margin: 0 auto; }
 
-  /* شريط التنبيه العلوي لوضع التعديل */
   .edit-mode-bar {
     background: linear-gradient(135deg, #f39c12, #e67e22);
-    color: #fff;
-    padding: 12px 18px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
-    animation: slideDown 0.4s ease;
-    flex-wrap: wrap;
+    color: #fff; padding: 12px 18px; border-radius: 12px; margin-bottom: 15px;
+    display: none; align-items: center; justify-content: space-between;
+    gap: 10px; box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+    animation: slideDown 0.4s ease; flex-wrap: wrap;
   }
   .edit-mode-bar.show { display: flex; }
-  @keyframes slideDown {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  .edit-mode-bar .edit-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: bold;
-    font-size: 0.95rem;
-    flex: 1;
-  }
-  .edit-mode-bar .edit-info .edit-icon {
-    font-size: 1.3rem;
-    animation: bounce 1.5s infinite;
-  }
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-  }
+  @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .edit-mode-bar .edit-info { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 0.95rem; flex: 1; }
+  .edit-mode-bar .edit-info .edit-icon { font-size: 1.3rem; animation: bounce 1.5s infinite; }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
   .edit-mode-bar .cancel-edit-btn {
-    background: rgba(255,255,255,0.25);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.4);
-    padding: 6px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.85rem;
-    transition: 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    background: rgba(255,255,255,0.25); color: #fff;
+    border: 1px solid rgba(255,255,255,0.4); padding: 6px 14px;
+    border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85rem;
+    transition: 0.2s; display: flex; align-items: center; gap: 4px;
   }
-  .edit-mode-bar .cancel-edit-btn:hover {
-    background: rgba(255,255,255,0.4);
-  }
+  .edit-mode-bar .cancel-edit-btn:hover { background: rgba(255,255,255,0.4); }
 
   .top-bar {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 12px 15px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-    box-shadow: 0 10px 30px var(--shadow);
+    background: var(--card-bg); border-radius: 16px; padding: 12px 15px;
+    margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; box-shadow: 0 10px 30px var(--shadow);
     transition: background 0.5s;
   }
   .top-bar-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .icon-btn {
     width: 42px; height: 42px; border-radius: 12px;
-    border: 1px solid var(--border-color);
-    background: var(--input-bg); color: var(--text-primary);
-    cursor: pointer; font-size: 18px;
-    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary);
+    cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
     transition: 0.3s; position: relative;
   }
-  .icon-btn:hover {
-    background: var(--accent); color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(139,127,212,0.4);
-  }
+  .icon-btn:hover { background: var(--accent); color: #fff; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(139,127,212,0.4); }
   .icon-btn .badge {
-    position: absolute; top: -5px; left: -5px;
-    background: #e74c3c; color: #fff; font-size: 10px;
-    min-width: 18px; height: 18px; border-radius: 9px;
+    position: absolute; top: -5px; left: -5px; background: #e74c3c; color: #fff;
+    font-size: 10px; min-width: 18px; height: 18px; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
     font-weight: bold; padding: 0 4px;
   }
   .font-size-label { font-size: 11px; color: var(--text-muted); margin-right: 4px; }
 
   .card {
-    background: var(--card-bg); border-radius: 20px;
-    padding: 30px; width: 100%;
-    box-shadow: 0 20px 60px var(--shadow);
-    transition: background 0.5s;
-    overflow-x: hidden; /* إضافة احتياطية لمنع الخروج الأفقي */
+    background: var(--card-bg); border-radius: 20px; padding: 30px; width: 100%;
+    box-shadow: 0 20px 60px var(--shadow); transition: background 0.5s;
+    overflow-x: hidden;
   }
   h1 { text-align: center; color: var(--text-primary); margin-bottom: 8px; font-size: 1.6rem; }
   .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; }
@@ -185,276 +126,104 @@
   .toggle-wrap {
     background: var(--result-bg); border: 2px solid var(--border-color);
     border-radius: 12px; padding: 12px 15px; margin-bottom: 18px;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    transition: 0.5s;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; transition: 0.5s;
   }
   .toggle-label { display: flex; flex-direction: column; flex: 1; }
   .toggle-title { font-size: 1rem; font-weight: bold; color: var(--text-primary); }
   .toggle-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
   .switch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
   .switch input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute; cursor: pointer; inset: 0;
-    background: var(--disabled-text); border-radius: 28px; transition: 0.3s;
-  }
-  .slider::before {
-    content: ''; position: absolute; height: 22px; width: 22px;
-    right: 3px; top: 3px; background: #fff; border-radius: 50%;
-    transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
+  .slider { position: absolute; cursor: pointer; inset: 0; background: var(--disabled-text); border-radius: 28px; transition: 0.3s; }
+  .slider::before { content: ''; position: absolute; height: 22px; width: 22px; right: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
   .switch input:checked + .slider { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); }
   .switch input:checked + .slider::before { transform: translateX(-24px); }
 
-  .calendar {
-    background: var(--cal-bg); border: 1px solid var(--border-color);
-    border-radius: 14px; padding: 15px; margin-bottom: 20px; transition: 0.5s;
-    overflow-x: hidden; /* إضافة احتياطية لمنع الخروج الأفقي */
-  }
+  .calendar { background: var(--cal-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 15px; margin-bottom: 20px; transition: 0.5s; overflow-x: hidden; }
   .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-  .cal-nav button {
-    background: var(--result-bg); border: 1px solid var(--border-color); color: var(--text-primary);
-    width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-    font-size: 16px; font-weight: bold; transition: 0.2s;
-  }
+  .cal-nav button { background: var(--result-bg); border: 1px solid var(--border-color); color: var(--text-primary); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
   .cal-nav button:hover:not(:disabled) { background: var(--accent); color: #fff; }
   .cal-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
   .cal-title { font-weight: bold; color: var(--text-primary); font-size: 1.15rem; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-  .cal-day-name {
-    text-align: center; font-size: 0.85rem; font-weight: bold;
-    color: var(--text-muted); padding: 6px 0;
-  }
+  .cal-day-name { text-align: center; font-size: 0.85rem; font-weight: bold; color: var(--text-muted); padding: 6px 0; }
   .cal-day-name.weekend { color: var(--weekend-color); }
-  .cal-cell {
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; border-radius: 8px; color: var(--text-secondary);
-    cursor: pointer; transition: 0.15s; user-select: none;
-    border: 2px solid transparent;
-  }
+  .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 1rem; border-radius: 8px; color: var(--text-secondary); cursor: pointer; transition: 0.15s; user-select: none; border: 2px solid transparent; }
   .cal-cell:hover:not(.empty):not(.disabled) { background: var(--cal-hover); transform: scale(1.08); }
   .cal-cell.empty { cursor: default; background: transparent; }
   .cal-cell.weekend { color: var(--weekend-color); font-weight: bold; }
   .cal-cell.today { border-color: #f39c12; font-weight: bold; }
-  .cal-cell.selected {
-    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-    color: #fff !important; font-weight: bold;
-    box-shadow: 0 4px 12px rgba(139,127,212,0.5); transform: scale(1.05);
-  }
-  .cal-cell.in-range {
-    background: var(--cal-hover); color: var(--text-primary); font-weight: bold; cursor: default;
-  }
+  .cal-cell.selected { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff !important; font-weight: bold; box-shadow: 0 4px 12px rgba(139,127,212,0.5); transform: scale(1.05); }
+  .cal-cell.in-range { background: var(--cal-hover); color: var(--text-primary); font-weight: bold; cursor: default; }
   .cal-cell.in-range.weekend { background: var(--weekend-bg); color: var(--weekend-color); }
-  .cal-cell.range-start {
-    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-    color: #fff !important; font-weight: bold;
-    box-shadow: 0 4px 12px rgba(139,127,212,0.5);
-    border-radius: 8px 0 0 8px;
-  }
-  .cal-cell.range-end {
-    background: linear-gradient(135deg, var(--accent-dark), var(--accent));
-    color: #fff !important; font-weight: bold;
-    box-shadow: 0 4px 12px rgba(139,127,212,0.5);
-    border-radius: 0 8px 8px 0;
-  }
+  .cal-cell.range-start { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff !important; font-weight: bold; box-shadow: 0 4px 12px rgba(139,127,212,0.5); border-radius: 8px 0 0 8px; }
+  .cal-cell.range-end { background: linear-gradient(135deg, var(--accent-dark), var(--accent)); color: #fff !important; font-weight: bold; box-shadow: 0 4px 12px rgba(139,127,212,0.5); border-radius: 0 8px 8px 0; }
   .cal-cell.range-start.range-end { border-radius: 8px; }
-  .cal-cell.workday-return {
-    background: var(--workday-bg); color: #fff !important; font-weight: bold;
-    box-shadow: 0 4px 12px rgba(46,204,113,0.5);
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 4px 12px rgba(46,204,113,0.5); }
-    50% { box-shadow: 0 4px 18px rgba(46,204,113,0.9); }
-  }
-  .cal-cell.disabled {
-    color: var(--disabled-text) !important; background: var(--disabled-bg);
-    cursor: not-allowed; text-decoration: line-through; font-weight: normal;
-  }
+  .cal-cell.workday-return { background: var(--workday-bg); color: #fff !important; font-weight: bold; box-shadow: 0 4px 12px rgba(46,204,113,0.5); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 4px 12px rgba(46,204,113,0.5); } 50% { box-shadow: 0 4px 18px rgba(46,204,113,0.9); } }
+  .cal-cell.disabled { color: var(--disabled-text) !important; background: var(--disabled-bg); cursor: not-allowed; text-decoration: line-through; font-weight: normal; }
   .cal-cell.disabled:hover { transform: none; background: var(--disabled-bg); }
 
-  .selected-info {
-    background: var(--result-bg); border-right: 4px solid var(--result-border);
-    padding: 12px 15px; border-radius: 10px; margin-bottom: 15px;
-    text-align: center; color: var(--text-primary); font-weight: bold; font-size: 1.05rem;
-    min-height: 45px; display: flex; align-items: center; justify-content: center;
-    transition: 0.5s;
-  }
+  .selected-info { background: var(--result-bg); border-right: 4px solid var(--result-border); padding: 12px 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; color: var(--text-primary); font-weight: bold; font-size: 1.05rem; min-height: 45px; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
   .days-row { margin-bottom: 15px; }
-  .days-row label {
-    display: block; margin-bottom: 6px; color: var(--text-secondary);
-    font-size: 0.9rem; font-weight: bold;
-  }
-  .days-row input {
-    width: 100%; padding: 12px; border: 2px solid var(--input-border);
-    border-radius: 10px; font-size: 1rem; text-align: center; background: var(--input-bg);
-    color: var(--text-primary); transition: 0.3s;
-  }
+  .days-row label { display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 0.9rem; font-weight: bold; }
+  .days-row input { width: 100%; padding: 12px; border: 2px solid var(--input-border); border-radius: 10px; font-size: 1rem; text-align: center; background: var(--input-bg); color: var(--text-primary); transition: 0.3s; }
   .days-row input:focus { outline: none; border-color: var(--accent); background: var(--card-bg); }
 
-  .result {
-    margin-top: 20px; padding: 18px;
-    background: var(--result-bg); border-right: 5px solid var(--result-border);
-    border-radius: 10px; display: none; transition: 0.5s;
-  }
+  .result { margin-top: 20px; padding: 18px; background: var(--result-bg); border-right: 5px solid var(--result-border); border-radius: 10px; display: none; transition: 0.5s; }
   .result.show { display: block; animation: fade 0.4s; }
   @keyframes fade { from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
   .result p { margin: 6px 0; color: var(--text-secondary); }
   .result .big { font-size: 1.3rem; font-weight: bold; color: var(--text-primary); margin-top: 8px; }
-  .result .workday {
-    font-size: 1.2rem; font-weight: bold; color: var(--workday-bg);
-    margin-top: 8px; padding: 10px; background: rgba(46,204,113,0.15);
-    border-radius: 8px; text-align: center;
-  }
+  .result .workday { font-size: 1.2rem; font-weight: bold; color: var(--workday-bg); margin-top: 8px; padding: 10px; background: rgba(46,204,113,0.15); border-radius: 8px; text-align: center; }
   .result .skipped { font-size: 0.85rem; color: var(--weekend-color); margin-top: 6px; font-style: italic; }
 
-  .action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 15px;
-  }
-  .action-btn {
-    padding: 12px 10px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.9rem;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    color: #fff;
-  }
+  .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+  .action-btn { padding: 12px 10px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; }
   .action-btn:hover:not(:disabled) { transform: translateY(-2px); }
   .action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   .action-btn.print { background: linear-gradient(135deg, #3498db, #2980b9); box-shadow: 0 4px 12px rgba(52,152,219,0.3); }
-  .action-btn.print:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(52,152,219,0.5); }
   .action-btn.pdf { background: linear-gradient(135deg, #e74c3c, #c0392b); box-shadow: 0 4px 12px rgba(231,76,60,0.3); }
-  .action-btn.pdf:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(231,76,60,0.5); }
+  .action-btn.share-pdf { background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 4px 12px rgba(37,211,102,0.3); grid-column: 1 / -1; }
+  .action-btn.share-pdf:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(37,211,102,0.5); }
   .action-btn.share { background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 4px 12px rgba(37,211,102,0.3); grid-column: 1 / -1; }
-  .action-btn.share:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(37,211,102,0.5); }
   .action-btn.calendar { background: linear-gradient(135deg, #f39c12, #e67e22); box-shadow: 0 4px 12px rgba(243,156,18,0.3); grid-column: 1 / -1; }
-  .action-btn.calendar:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(243,156,18,0.5); }
 
-  .save-section {
-    margin-top: 25px; padding: 20px;
-    background: var(--result-bg); border: 2px dashed var(--border-color);
-    border-radius: 14px; transition: 0.5s;
-  }
-  .save-section.edit-mode {
-    border-color: #f39c12;
-    background: rgba(243, 156, 18, 0.08);
-  }
-  .save-title {
-    color: var(--text-primary); font-weight: bold; margin-bottom: 12px;
-    font-size: 1rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  }
-  .save-title .optional {
-    font-size: 0.75rem; color: var(--text-muted); font-weight: normal;
-    background: var(--input-bg); padding: 2px 8px; border-radius: 10px;
-  }
-  .toggle-permit-btn {
-    margin-right: auto;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: var(--input-bg);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: 0.3s;
-    font-weight: normal;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .toggle-permit-btn:hover {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-  .toggle-permit-btn.active {
-    background: #e74c3c;
-    color: #fff;
-    border-color: #c0392b;
-  }
+  .save-section { margin-top: 25px; padding: 20px; background: var(--result-bg); border: 2px dashed var(--border-color); border-radius: 14px; transition: 0.5s; }
+  .save-section.edit-mode { border-color: #f39c12; background: rgba(243, 156, 18, 0.08); }
+  .save-title { color: var(--text-primary); font-weight: bold; margin-bottom: 12px; font-size: 1rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .save-title .optional { font-size: 0.75rem; color: var(--text-muted); font-weight: normal; background: var(--input-bg); padding: 2px 8px; border-radius: 10px; }
+  .toggle-permit-btn { margin-right: auto; font-size: 0.75rem; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-secondary); cursor: pointer; transition: 0.3s; font-weight: normal; display: flex; align-items: center; gap: 4px; }
+  .toggle-permit-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .toggle-permit-btn.active { background: #e74c3c; color: #fff; border-color: #c0392b; }
   .save-fields { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
-  .save-field label {
-    display: block; margin-bottom: 4px; font-size: 0.8rem;
-    color: var(--text-secondary); font-weight: bold;
-  }
-  .save-field input {
-    width: 100%; padding: 10px; border: 2px solid var(--input-border);
-    border-radius: 8px; font-size: 0.9rem; background: var(--input-bg);
-    color: var(--text-primary); transition: 0.3s;
-  }
+  .save-field label { display: block; margin-bottom: 4px; font-size: 0.8rem; color: var(--text-secondary); font-weight: bold; }
+  .save-field input { width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 8px; font-size: 0.9rem; background: var(--input-bg); color: var(--text-primary); transition: 0.3s; }
   .save-field input:focus { outline: none; border-color: var(--accent); background: var(--card-bg); }
-  
   .dropdown-container { position: relative; }
   .custom-select { position: relative; }
-  .custom-select-input {
-    width: 100%; padding: 10px; border: 2px solid var(--input-border);
-    border-radius: 8px; font-size: 0.9rem; background: var(--input-bg);
-    color: var(--text-primary); transition: 0.3s; cursor: text;
-  }
+  .custom-select-input { width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 8px; font-size: 0.9rem; background: var(--input-bg); color: var(--text-primary); transition: 0.3s; cursor: text; }
   .custom-select-input:focus { outline: none; border-color: var(--accent); background: var(--card-bg); }
-  .custom-select-options {
-    position: absolute; top: 100%; left: 0; right: 0;
-    background: var(--card-bg); border: 1px solid var(--border-color);
-    border-radius: 8px; max-height: 220px; overflow-y: auto;
-    z-index: 1000; list-style: none; padding: 0; margin: 4px 0 0 0;
-    box-shadow: 0 10px 30px var(--shadow); display: none;
-  }
+  .custom-select-options { position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; max-height: 220px; overflow-y: auto; z-index: 1000; list-style: none; padding: 0; margin: 4px 0 0 0; box-shadow: 0 10px 30px var(--shadow); display: none; }
   .custom-select-options.show { display: block; animation: fadeIn 0.2s; }
-  .custom-select-options li {
-    padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-  }
+  .custom-select-options li { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--text-primary); }
   .custom-select-options li:last-child { border-bottom: none; }
   .custom-select-options li:hover { background: var(--cal-hover); }
-  .custom-select-options li .permit-badge {
-    font-size: 0.7rem; background: #ffe5e5; color: #c0392b;
-    padding: 2px 6px; border-radius: 4px; font-weight: bold; white-space: nowrap;
-  }
-  [data-theme="dark"] .custom-select-options li .permit-badge {
-    background: #3d2020; color: #ff6b6b;
-  }
-  .permit-warning {
-    background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3);
-    color: #c0392b; padding: 6px 10px; border-radius: 6px; margin-top: 6px;
-    display: none; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: bold;
-  }
+  .custom-select-options li .permit-badge { font-size: 0.7rem; background: #ffe5e5; color: #c0392b; padding: 2px 6px; border-radius: 4px; font-weight: bold; white-space: nowrap; }
+  [data-theme="dark"] .custom-select-options li .permit-badge { background: #3d2020; color: #ff6b6b; }
+  .permit-warning { background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); color: #c0392b; padding: 6px 10px; border-radius: 6px; margin-top: 6px; display: none; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: bold; }
   [data-theme="dark"] .permit-warning { color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3); background: rgba(255, 107, 107, 0.1); }
 
-  .save-btn {
-    width: 100%; padding: 12px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-    color: #fff; border: none; border-radius: 10px;
-    font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s;
-  }
+  .save-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
   .save-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139,127,212,0.4); }
   .save-btn:disabled { background: var(--disabled-text); cursor: not-allowed; transform: none; }
-  .save-btn.edit-mode {
-    background: linear-gradient(135deg, #f39c12, #e67e22);
-  }
-  .save-btn.edit-mode:hover:not(:disabled) {
-    box-shadow: 0 10px 20px rgba(243, 156, 18, 0.4);
-  }
-  .save-msg {
-    margin-top: 10px; padding: 8px; border-radius: 8px;
-    text-align: center; font-size: 0.85rem; display: none;
-  }
+  .save-btn.edit-mode { background: linear-gradient(135deg, #f39c12, #e67e22); }
+  .save-btn.edit-mode:hover:not(:disabled) { box-shadow: 0 10px 20px rgba(243, 156, 18, 0.4); }
+  .save-msg { margin-top: 10px; padding: 8px; border-radius: 8px; text-align: center; font-size: 0.85rem; display: none; }
   .save-msg.success { display: block; background: rgba(46,204,113,0.15); color: var(--workday-bg); }
   .save-msg.error { display: block; background: rgba(231,76,60,0.15); color: var(--weekend-color); }
 
-  .legend {
-    display: flex; flex-wrap: wrap; gap: 10px;
-    justify-content: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);
-  }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-muted); }
   .legend-item { display: flex; align-items: center; gap: 5px; }
   .legend-box { width: 14px; height: 14px; border-radius: 4px; }
   .legend-box.sel { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); }
@@ -465,122 +234,57 @@
   .legend-box.work { background: var(--workday-bg); }
   .legend-box.dis { background: var(--disabled-bg); color: var(--disabled-text); border: 1px solid var(--border-color); text-decoration: line-through; font-size:0.6rem; display:flex; align-items:center; justify-content:center;}
 
-  .site-footer {
-    margin-top: 20px;
-    background: var(--footer-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-    color: var(--footer-text);
-    box-shadow: 0 10px 30px var(--shadow);
-    transition: background 0.5s;
-    position: relative;
-    overflow: hidden;
-  }
-  .site-footer::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-  }
-  .footer-brand {
-    display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px;
-    font-size: 1.1rem; font-weight: bold;
-  }
+  .site-footer { margin-top: 20px; background: var(--footer-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; text-align: center; color: var(--footer-text); box-shadow: 0 10px 30px var(--shadow); transition: background 0.5s; position: relative; overflow: hidden; }
+  .site-footer::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); }
+  .footer-brand { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; font-size: 1.1rem; font-weight: bold; }
   .footer-brand .logo-icon { font-size: 1.4rem; }
-  .footer-brand .brand-name {
-    background: linear-gradient(135deg, #fff, #e0e0ff);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 0.5px;
-  }
-  .footer-divider {
-    width: 60px; height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); margin: 10px auto;
-  }
+  .footer-brand .brand-name { background: linear-gradient(135deg, #fff, #e0e0ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 0.5px; }
+  .footer-divider { width: 60px; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); margin: 10px auto; }
   .footer-copyright { font-size: 0.85rem; color: var(--footer-muted); line-height: 1.6; }
   .footer-copyright .year { font-weight: bold; color: var(--footer-text); }
-  .footer-copyright .owner {
-    font-weight: bold; color: var(--footer-text);
-    background: linear-gradient(135deg, #ffd700, #ffaa00);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; padding: 0 4px;
-  }
+  .footer-copyright .owner { font-weight: bold; color: var(--footer-text); background: linear-gradient(135deg, #ffd700, #ffaa00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; padding: 0 4px; }
   .footer-tagline { font-size: 0.75rem; color: var(--footer-muted); margin-top: 8px; font-style: italic; opacity: 0.8; }
   .footer-hearts { margin-top: 8px; font-size: 0.8rem; color: var(--footer-muted); }
   .footer-hearts .heart { color: #ff6b6b; animation: heartbeat 1.5s infinite; display: inline-block; }
   @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-    display: none; align-items: center; justify-content: center;
-    z-index: 1000; padding: 20px;
-  }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
   .modal-overlay.show { display: flex; animation: fadeIn 0.3s; }
   @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-  .modal {
-    background: var(--card-bg); border-radius: 20px;
-    max-width: 700px; width: 100%; max-height: 85vh;
-    display: flex; flex-direction: column;
-    box-shadow: 0 25px 80px rgba(0,0,0,0.5);
-    animation: slideUp 0.3s;
-  }
+  .modal { background: var(--card-bg); border-radius: 20px; max-width: 700px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 25px 80px rgba(0,0,0,0.5); animation: slideUp 0.3s; }
   @keyframes slideUp { from {transform:translateY(30px); opacity:0;} to {transform:translateY(0); opacity:1;} }
-  .modal-header {
-    padding: 20px 25px; border-bottom: 1px solid var(--border-color);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .modal-title {
-    color: var(--text-primary); font-size: 1.3rem; font-weight: bold;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .modal-close {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    background: var(--result-bg); color: var(--text-primary);
-    cursor: pointer; font-size: 18px; transition: 0.2s;
-  }
+  .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { color: var(--text-primary); font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+  .modal-close { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--result-bg); color: var(--text-primary); cursor: pointer; font-size: 18px; transition: 0.2s; }
   .modal-close:hover { background: #e74c3c; color: #fff; }
   .modal-body { padding: 20px 25px; overflow-y: auto; flex: 1; }
-  .modal-footer {
-    padding: 15px 25px; border-top: 1px solid var(--border-color);
-    display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
-  }
-  .modal-btn {
-    padding: 10px 18px; border-radius: 10px; border: none;
-    cursor: pointer; font-weight: bold; font-size: 0.9rem;
-    transition: 0.2s; display: flex; align-items: center; gap: 6px;
-  }
+  .modal-footer { padding: 15px 25px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+  .modal-btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
   .modal-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; }
   .modal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(139,127,212,0.4); }
   .modal-btn.danger { background: #e74c3c; color: #fff; }
   .modal-btn.danger:hover { background: #c0392b; }
   .modal-btn.secondary { background: var(--result-bg); color: var(--text-primary); border: 1px solid var(--border-color); }
+  .modal-btn.share-pdf { background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; }
+  .modal-btn.share-pdf:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37,211,102,0.4); }
 
   .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
   .empty-state .icon { font-size: 3rem; margin-bottom: 10px; }
 
   .records-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .records-table th {
-    background: var(--result-bg); color: var(--text-primary);
-    padding: 10px 8px; text-align: right; font-weight: bold;
-    border-bottom: 2px solid var(--border-color); position: sticky; top: 0;
-  }
-  .records-table td {
-    padding: 10px 8px; border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary); vertical-align: middle;
-  }
+  .records-table th { background: var(--result-bg); color: var(--text-primary); padding: 10px 8px; text-align: right; font-weight: bold; border-bottom: 2px solid var(--border-color); position: sticky; top: 0; }
+  .records-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); vertical-align: middle; }
   .records-table tr:hover td { background: var(--cal-hover); }
 
-  .row-actions { display: flex; gap: 4px; justify-content: flex-start; flex-wrap: nowrap; }
-  .row-action-btn {
-    width: 32px; height: 32px; border-radius: 8px; border: none;
-    cursor: pointer; font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-    transition: 0.2s; color: #fff; flex-shrink: 0;
-  }
+  .row-actions { display: flex; gap: 4px; justify-content: flex-start; flex-wrap: wrap; }
+  .row-action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s; color: #fff; flex-shrink: 0; }
   .row-action-btn:hover { transform: translateY(-2px); }
   .row-action-btn.print { background: #3498db; }
   .row-action-btn.print:hover { background: #2980b9; box-shadow: 0 3px 8px rgba(52,152,219,0.4); }
   .row-action-btn.pdf { background: #e74c3c; }
   .row-action-btn.pdf:hover { background: #c0392b; box-shadow: 0 3px 8px rgba(231,76,60,0.4); }
+  .row-action-btn.share-pdf { background: #25D366; }
+  .row-action-btn.share-pdf:hover { background: #128C7E; box-shadow: 0 3px 8px rgba(37,211,102,0.4); }
   .row-action-btn.calendar { background: #f39c12; }
   .row-action-btn.calendar:hover { background: #e67e22; box-shadow: 0 3px 8px rgba(243,156,18,0.4); }
   .row-action-btn.edit { background: #f39c12; }
@@ -588,101 +292,57 @@
   .row-action-btn.delete { background: transparent; color: #e74c3c; }
   .row-action-btn.delete:hover { background: rgba(231,76,60,0.15); }
 
-  .print-card {
-    background: #fff; color: #333; padding: 30px;
-    border-radius: 12px; max-width: 600px; margin: 0 auto;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-  }
-  .print-card-header {
-    text-align: center; padding-bottom: 20px;
-    border-bottom: 3px double #667eea; margin-bottom: 20px;
-  }
+  .print-card { background: #fff; color: #333; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, sans-serif; }
+  .print-card-header { text-align: center; padding-bottom: 20px; border-bottom: 3px double #667eea; margin-bottom: 20px; }
   .print-card-header .logo { font-size: 40px; margin-bottom: 8px; }
   .print-card-header h2 { color: #4a3f8c; font-size: 22px; margin-bottom: 4px; }
   .print-card-header .sub { color: #777; font-size: 13px; }
   .print-card-body { padding: 15px 0; }
-  .print-row {
-    display: flex; justify-content: space-between;
-    padding: 12px 0; border-bottom: 1px dashed #e0e0e0; align-items: center;
-  }
+  .print-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #e0e0e0; align-items: center; }
   .print-row:last-child { border-bottom: none; }
   .print-row .label { color: #777; font-size: 14px; font-weight: bold; }
   .print-row .value { color: #333; font-size: 15px; font-weight: bold; text-align: left; }
-  .print-row.highlight {
-    background: #f0f4ff; margin: 8px -15px;
-    padding: 12px 15px; border-radius: 8px; border-bottom: none;
-  }
+  .print-row.highlight { background: #f0f4ff; margin: 8px -15px; padding: 12px 15px; border-radius: 8px; border-bottom: none; }
   .print-row.highlight .value { color: #27ae60; font-size: 17px; }
   .print-row.end .value { color: #4a3f8c; font-size: 17px; }
-  .print-card-footer {
-    margin-top: 25px; padding-top: 15px; border-top: 2px solid #f0f0f0;
-    display: flex; justify-content: space-between; font-size: 11px; color: #999;
-  }
+  .print-card-footer { margin-top: 25px; padding-top: 15px; border-top: 2px solid #f0f0f0; display: flex; justify-content: space-between; font-size: 11px; color: #999; }
 
-  .toast {
-    position: fixed; bottom: 30px; left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #333; color: #fff; padding: 12px 20px;
-    border-radius: 10px; font-size: 14px; z-index: 2000;
-    opacity: 0; transition: all 0.3s;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    max-width: 90%; text-align: center;
-  }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; z-index: 2000; opacity: 0; transition: all 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 90%; text-align: center; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.success { background: #27ae60; }
   .toast.error { background: #e74c3c; }
   .toast.info { background: #3498db; }
 
-  .spinner {
-    display: inline-block; width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff; border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   @media print {
     body { background: #fff !important; padding: 0; }
     .top-bar, .card, .site-footer, .modal-overlay:not(.print-mode):not(.print-individual-mode), .modal-footer, .modal-close, .toast, .edit-mode-bar { display: none !important; }
-    .modal-overlay.print-mode, .modal-overlay.print-individual-mode {
-      position: static; background: #fff !important; backdrop-filter: none; display: block !important; padding: 0;
-    }
-    .modal-overlay.print-mode .modal, .modal-overlay.print-individual-mode .modal {
-      max-height: none; box-shadow: none; max-width: 100%; animation: none; background: #fff;
-    }
+    .modal-overlay.print-mode, .modal-overlay.print-individual-mode { position: static; background: #fff !important; backdrop-filter: none; display: block !important; padding: 0; }
+    .modal-overlay.print-mode .modal, .modal-overlay.print-individual-mode .modal { max-height: none; box-shadow: none; max-width: 100%; animation: none; background: #fff; }
     .modal-header, .modal-footer { display: none !important; }
     .modal-body { padding: 0; overflow: visible; }
-    .print-header-report {
-      display: block !important; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px double #333;
-    }
+    .print-header-report { display: block !important; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px double #333; }
     .print-header-report h1 { color: #333 !important; font-size: 22px; margin-bottom: 5px; }
     .print-header-report p { color: #666 !important; font-size: 12px; }
     .records-table { font-size: 11px; }
     .records-table th { background: #f0f0f0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .records-table td { color: #000 !important; }
     .row-actions { display: none !important; }
-    .print-footer-report {
-      display: block !important; margin-top: 20px; padding-top: 15px; border-top: 1px solid #999;
-      text-align: center; font-size: 11px; color: #666;
-    }
+    .print-footer-report { display: block !important; margin-top: 20px; padding-top: 15px; border-top: 1px solid #999; text-align: center; font-size: 11px; color: #666; }
   }
   .print-header-report, .print-footer-report { display: none; }
 
-  /* ==========================================
-     تحسينات خاصة للهاتف (إصلاح مشكلة الخروج من الحاوية)
-     ========================================== */
   @media (max-width: 600px) {
     body { padding: 10px; }
-    .card { padding: 15px; } /* تقليل الحواشي لتوفير مساحة */
-    .calendar { padding: 10px; } /* تقليل حواشي التقويم */
-    
-    .cal-grid { gap: 2px; } /* تقليل المسافات بين الخلايا */
-    .cal-cell { font-size: 0.75rem; border-radius: 6px; } /* تصغير الخط تلقائياً في الهاتف */
-    .cal-day-name { font-size: 0.7rem; padding: 4px 0; } /* تصغير أسماء الأيام */
-    
+    .card { padding: 15px; }
+    .calendar { padding: 10px; }
+    .cal-grid { gap: 2px; }
+    .cal-cell { font-size: 0.75rem; border-radius: 6px; }
+    .cal-day-name { font-size: 0.7rem; padding: 4px 0; }
     .cal-nav button { width: 30px; height: 30px; font-size: 14px; }
     .cal-title { font-size: 0.95rem; }
-    
     .action-buttons { grid-template-columns: 1fr; }
     .records-table { font-size: 0.75rem; }
     .records-table th, .records-table td { padding: 8px 4px; }
@@ -701,16 +361,13 @@
 </head>
 <body>
   <div class="main-wrap">
-    
-    <!-- شريط التنبيه لوضع التعديل -->
+
     <div class="edit-mode-bar" id="editModeBar">
       <div class="edit-info">
         <span class="edit-icon">📝</span>
         <span>وضع التعديل مفعّل - جارٍ تعديل سجل: <strong id="editModeName">—</strong></span>
       </div>
-      <button class="cancel-edit-btn" onclick="cancelEditMode()">
-        ✕ إلغاء التعديل
-      </button>
+      <button class="cancel-edit-btn" onclick="cancelEditMode()">✕ إلغاء التعديل</button>
     </div>
 
     <div class="top-bar">
@@ -764,6 +421,7 @@
       <div class="action-buttons" id="actionButtons" style="display:none;">
         <button class="action-btn print" onclick="printIndividual()">🖨️ طباعة</button>
         <button class="action-btn pdf" onclick="downloadPDF()">📄 تحميل PDF</button>
+        <button class="action-btn share-pdf" onclick="sharePDF(null, this)">📤 مشاركة PDF</button>
         <button class="action-btn calendar" onclick="addToCalendar()">📅 إضافة للتقويم</button>
         <button class="action-btn share" onclick="shareVacation()">📤 مشاركة واتساب</button>
       </div>
@@ -780,7 +438,7 @@
             <label>👤 الاسم</label>
             <input type="text" id="empName" placeholder="أدخل الاسم" maxlength="50">
           </div>
-          
+
           <div class="save-field dropdown-container">
             <label>🌍 الدولة الأولى</label>
             <div class="custom-select">
@@ -871,6 +529,7 @@
       <div class="modal-footer">
         <button class="modal-btn secondary" onclick="closeIndividualModal()">إغلاق</button>
         <button class="modal-btn primary" onclick="doPrintIndividual()">🖨️ طباعة</button>
+        <button class="modal-btn share-pdf" onclick="sharePDF(null, this)">📤 مشاركة PDF</button>
       </div>
     </div>
   </div>
@@ -909,6 +568,253 @@
     "النمسا", "بلجيكا", "هولندا", "اليونان", "البرتغال", "أيرلندا", "بولندا", "أوكرانيا"
   ];
 
+  // ======================================================
+  // 🔽 تحميل المكتبات مع 3 CDNs احتياطية
+  // ======================================================
+  const CDN_SOURCES = {
+    html2canvas: [
+      'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+      'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+      'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js'
+    ],
+    jspdf: [
+      'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+      'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+      'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+    ]
+  };
+
+  function loadScriptWithFallback(urls) {
+    return new Promise((resolve, reject) => {
+      let i = 0;
+      const tryNext = () => {
+        if (i >= urls.length) { reject(new Error('كل الـ CDNs فشلت')); return; }
+        const s = document.createElement('script');
+        s.src = urls[i++];
+        s.async = true;
+        s.onload = () => resolve(true);
+        s.onerror = () => { s.remove(); tryNext(); };
+        document.head.appendChild(s);
+      };
+      tryNext();
+    });
+  }
+
+  async function ensurePdfLibs() {
+    if (typeof window.html2canvas === 'undefined') {
+      await loadScriptWithFallback(CDN_SOURCES.html2canvas);
+    }
+    if (typeof window.jspdf === 'undefined') {
+      await loadScriptWithFallback(CDN_SOURCES.jspdf);
+    }
+  }
+
+  // ======================================================
+  // 🎨 ستايلات الـ PDF المستقلة (تُدمج داخل الحاوية عبر DOMParser)
+  // ======================================================
+  const PDF_STYLES = `
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    .print-card { background:#fff; color:#333; padding:30px; border-radius:12px; width:600px; margin:0 auto; direction:rtl; }
+    .print-card-header { text-align:center; padding-bottom:20px; border-bottom:3px double #667eea; margin-bottom:20px; }
+    .print-card-header .logo { font-size:40px; margin-bottom:8px; }
+    .print-card-header h2 { color:#4a3f8c; font-size:22px; margin-bottom:4px; }
+    .print-card-header .sub { color:#777; font-size:13px; }
+    .print-card-body { padding:15px 0; }
+    .print-row { display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px dashed #e0e0e0; align-items:center; }
+    .print-row:last-child { border-bottom:none; }
+    .print-row .label { color:#777; font-size:14px; font-weight:bold; }
+    .print-row .value { color:#333; font-size:15px; font-weight:bold; text-align:left; }
+    .print-row.highlight { background:#f0f4ff; margin:8px -15px; padding:12px 15px; border-radius:8px; border-bottom:none; }
+    .print-row.highlight .value { color:#27ae60; font-size:17px; }
+    .print-row.end .value { color:#4a3f8c; font-size:17px; }
+    .print-card-footer { margin-top:25px; padding-top:15px; border-top:2px solid #f0f0f0; display:flex; justify-content:space-between; font-size:11px; color:#999; }
+  `;
+
+  // ======================================================
+  // 📄 مولّد PDF بالطريقة المطلوبة (حاوية مرئية + DOMParser + طبقة معتمة + A4 متعدد)
+  // ======================================================
+  async function generatePDFBlob(data) {
+    await ensurePdfLibs();
+
+    // (5) طبقة معتمة فوق كل شيء
+    const overlay = document.createElement('div');
+    overlay.id = 'pdfLoadingOverlay';
+    overlay.style.cssText = [
+      'position:fixed','top:0','left:0','right:0','bottom:0',
+      'background:rgba(0,0,0,0.9)',
+      'z-index:2147483646',
+      'display:flex','align-items:center','justify-content:center',
+      'flex-direction:column','gap:15px',
+      'color:#fff','font-size:18px','font-weight:bold',
+      'font-family:Segoe UI,Tahoma,sans-serif',
+      'direction:rtl'
+    ].join(';');
+    overlay.innerHTML = `
+      <div style="width:44px;height:44px;border:4px solid rgba(255,255,255,0.25);border-top-color:#fff;border-radius:50%;animation:pdfspin 0.8s linear infinite;"></div>
+      <div>جاري إنشاء PDF...</div>
+      <style>@keyframes pdfspin{to{transform:rotate(360deg)}}</style>
+    `;
+    document.body.appendChild(overlay);
+
+    // (4) افصل style عن body بـ DOMParser وأعد دمجهما داخل الحاوية
+    const cardHtml = buildIndividualCard(data);
+    const fullHtml = '<!DOCTYPE html><html><head><style>' + PDF_STYLES + '</style></head><body>' + cardHtml + '</body></html>';
+    const parsed = new DOMParser().parseFromString(fullHtml, 'text/html');
+    const styles = parsed.querySelectorAll('style');
+    const bodyHtml = parsed.body.innerHTML;
+
+    // (3) حاوية مرئية فعلاً في DOM (position:fixed; top:0; left:0; z-index عالٍ)
+    const container = document.createElement('div');
+    container.id = 'pdfRenderContainer';
+    container.style.cssText = [
+      'position:fixed','top:0','left:0',
+      'z-index:2147483645',
+      'width:800px','background:#fff','padding:0',
+      'direction:rtl'
+    ].join(';');
+    styles.forEach(s => container.appendChild(s.cloneNode(true)));
+    const inner = document.createElement('div');
+    inner.innerHTML = bodyHtml;
+    container.appendChild(inner);
+    document.body.appendChild(container);
+
+    try {
+      // (6) انتظر 500ms قبل html2canvas
+      await new Promise(r => setTimeout(r, 500));
+
+      const element = container.querySelector('#printCardContent') || container.firstElementChild;
+
+      // (7) احسب scale ديناميكياً
+      const targetPx = 1200;
+      const dynamicScale = Math.min(2, Math.max(0.8, targetPx / element.scrollWidth));
+
+      // (8) استخدم scrollX:0, scrollY:0
+      const canvas = await html2canvas(element, {
+        scale: dynamicScale,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const contentWidth = pdfWidth - margin * 2;
+      const contentHeight = pdfHeight - margin * 2;
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // (9) قسّم على عدة صفحات A4 تلقائياً
+      const totalPages = Math.max(1, Math.ceil(imgHeight / contentHeight));
+      for (let p = 0; p < totalPages; p++) {
+        if (p > 0) pdf.addPage();
+        const yOffset = margin - (p * contentHeight);
+        pdf.addImage(imgData, 'JPEG', margin, yOffset, imgWidth, imgHeight);
+      }
+
+      const safeName = (data.name || 'موظف').toString().replace(/[\\/:*?"<>|]+/g, '_').trim() || 'موظف';
+      const filename = `إجازة_${safeName}_${data.startDate.toISOString().split('T')[0]}.pdf`;
+      const blob = pdf.output('blob');
+      return { blob, filename };
+    } finally {
+      // (10) نظّف DOM بعد الانتهاء
+      if (container.parentNode) container.parentNode.removeChild(container);
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  // ======================================================
+  // 📤 مشاركة PDF (Web Share API + fallback للتحميل)
+  // ======================================================
+  async function sharePDF(recordId = null, btnEl = null) {
+    const data = getVacationData(recordId);
+    if (!data) return;
+
+    const btn = btnEl || (recordId !== null ? null : document.querySelector('.action-btn.share-pdf'));
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) { btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true; }
+
+    try {
+      const { blob, filename } = await generatePDFBlob(data);
+      const file = new File([blob], filename, { type: 'application/pdf' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'تقرير إجازة - ' + (data.name || 'موظف'),
+          text: 'تقرير الإجازة السنوية للموظف: ' + (data.name || '—')
+        });
+        showToast('✅ تمت مشاركة ملف PDF', 'success');
+      } else if (navigator.share) {
+        // محاولة مشاركة نصية + تحميل الملف
+        downloadBlob(blob, filename);
+        try {
+          await navigator.share({
+            title: 'تقرير إجازة - ' + (data.name || 'موظف'),
+            text: 'تقرير الإجازة السنوية للموظف: ' + (data.name || '—')
+          });
+        } catch (_) {}
+        showToast('📥 تم تنزيل PDF (المشاركة بالملف غير مدعومة)', 'info', 3500);
+      } else {
+        downloadBlob(blob, filename);
+        showToast('📥 تم تنزيل PDF (المشاركة غير مدعومة بالمتصفح)', 'info', 3500);
+      }
+    } catch (err) {
+      if (!err || err.name !== 'AbortError') {
+        console.error('Share PDF Error:', err);
+        showToast('❌ فشل إنشاء/مشاركة PDF', 'error');
+      }
+    } finally {
+      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+    }
+  }
+
+  // ======================================================
+  // 📥 تحميل PDF (بعد التعديل يستخدم generatePDFBlob)
+  // ======================================================
+  async function downloadPDF(recordId = null, btnEl = null) {
+    const data = getVacationData(recordId);
+    if (!data) return;
+
+    const btn = btnEl || (recordId !== null ? null : document.querySelector('.action-btn.pdf'));
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) { btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true; }
+
+    try {
+      const { blob, filename } = await generatePDFBlob(data);
+      downloadBlob(blob, filename);
+      showToast('✅ تم تحميل PDF', 'success');
+    } catch (err) {
+      console.error('PDF Error:', err);
+      showToast('❌ فشل إنشاء PDF', 'error');
+    } finally {
+      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+    }
+  }
+
+  // ======================================================
+  // (بقية الدوال كما هي - بدون تغيير)
+  // ======================================================
   function normalizeArabic(text) {
     if (!text) return '';
     return text.replace(/[إأآا]/g, 'ا')
@@ -923,14 +829,8 @@
     const query = normalizeArabic(inputElement.value);
     const list = document.getElementById(listId);
     list.innerHTML = '';
-    
-    if (query.length === 0) {
-      list.classList.remove('show');
-      return;
-    }
-
+    if (query.length === 0) { list.classList.remove('show'); return; }
     const matches = allCountries.filter(c => normalizeArabic(c).includes(query));
-    
     if (matches.length === 0) {
        list.innerHTML = '<li style="color:var(--text-muted); cursor:default; justify-content:center;">لا توجد نتائج مطابقة</li>';
     } else {
@@ -967,21 +867,16 @@
   function selectCountry(inputElement, listId, country, isSpecial) {
     inputElement.value = country;
     document.getElementById(listId).classList.remove('show');
-    
     const warningId = listId.replace('list', 'warning');
     const warningEl = document.getElementById(warningId);
-    if (warningEl) {
-      warningEl.style.display = (isSpecial && !hidePermitWarnings) ? 'flex' : 'none';
-    }
+    if (warningEl) warningEl.style.display = (isSpecial && !hidePermitWarnings) ? 'flex' : 'none';
     updateSaveButton();
   }
 
   function hideCountriesDelayed(listId) {
-    setTimeout(() => {
-      document.getElementById(listId).classList.remove('show');
-    }, 200);
+    setTimeout(() => { document.getElementById(listId).classList.remove('show'); }, 200);
   }
-  
+
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.custom-select')) {
       document.querySelectorAll('.custom-select-options').forEach(el => el.classList.remove('show'));
@@ -991,7 +886,6 @@
   function togglePermitWarnings() {
     hidePermitWarnings = !hidePermitWarnings;
     const btn = document.getElementById('permitToggleBtn');
-    
     if (hidePermitWarnings) {
       btn.innerHTML = '🔕 إخفاء الدول التي تحتاج تصريح خاص';
       btn.classList.add('active');
@@ -1066,9 +960,7 @@
     const d = new Date(afterDate);
     d.setHours(0,0,0,0);
     d.setDate(d.getDate() + 1);
-    while (d.getDay() === 5 || d.getDay() === 6) {
-      d.setDate(d.getDate() + 1);
-    }
+    while (d.getDay() === 5 || d.getDay() === 6) d.setDate(d.getDate() + 1);
     return d;
   }
 
@@ -1121,9 +1013,7 @@
       if (dow === 5 || dow === 6) cell.classList.add('weekend');
       if (cellDate.getTime() === today.getTime()) cell.classList.add('today');
 
-      if (lastReturnDate && cellDate.getTime() === lastReturnDate.getTime()) {
-        cell.classList.add('workday-return');
-      }
+      if (lastReturnDate && cellDate.getTime() === lastReturnDate.getTime()) cell.classList.add('workday-return');
 
       const isPast = cellDate.getTime() < today.getTime();
       if (!allowOldDates && isPast && !(lastReturnDate && cellDate.getTime() === lastReturnDate.getTime())) {
@@ -1133,9 +1023,7 @@
         cell.onclick = () => selectDate(viewYear, viewMonth, d);
       }
 
-      if (selectedDate && cellDate.getTime() === selectedDate.getTime()) {
-        cell.classList.add('selected');
-      }
+      if (selectedDate && cellDate.getTime() === selectedDate.getTime()) cell.classList.add('selected');
       grid.appendChild(cell);
     }
     updatePrevButton();
@@ -1257,29 +1145,21 @@
     document.getElementById('saveBtn').disabled = !(selectedDate && lastEndDate && lastReturnDate);
   }
 
-  // ==========================================
-  // 💾 حفظ / تحديث السجل (مع وضع التعديل)
-  // ==========================================
   function saveRecord() {
     if (!selectedDate || !lastEndDate || !lastReturnDate) return;
     const name = document.getElementById('empName').value.trim();
-    
+
     const c1 = document.getElementById('countryInput1').value.trim();
     const c2 = document.getElementById('countryInput2').value.trim();
     const c3 = document.getElementById('countryInput3').value.trim();
     const countries = [c1, c2, c3].filter(c => c !== '').join('، ') || '—';
-    
+
     const days = parseInt(document.getElementById('days').value);
     if (!name) { showSaveMsg('⚠️ الرجاء إدخال الاسم على الأقل', 'error'); return; }
-    
-    // وضع التعديل
+
     if (editingRecordId !== null) {
       const recordIndex = records.findIndex(r => r.id === editingRecordId);
-      if (recordIndex === -1) {
-        showSaveMsg('❌ السجل غير موجود', 'error');
-        return;
-      }
-      
+      if (recordIndex === -1) { showSaveMsg('❌ السجل غير موجود', 'error'); return; }
       const record = records[recordIndex];
       record.name = name;
       record.countries = countries;
@@ -1288,18 +1168,14 @@
       record.endDate = lastEndDate.toISOString();
       record.returnDate = lastReturnDate.toISOString();
       record.submittedAt = new Date().toISOString();
-      
       localStorage.setItem('vacationRecords', JSON.stringify(records));
       showSaveMsg(`✅ تم تحديث بيانات "${name}" بنجاح`, 'success');
       showToast(`✅ تم تحديث بيانات "${name}" بنجاح`, 'success', 3000);
-      
-      // الخروج من وضع التعديل
       exitEditMode();
       setTimeout(() => { document.getElementById('saveMsg').className = 'save-msg'; }, 3000);
       return;
     }
-    
-    // وضع الحفظ الجديد
+
     const record = {
       id: Date.now(), name, countries, days,
       startDate: selectedDate.toISOString(), endDate: lastEndDate.toISOString(),
@@ -1309,13 +1185,13 @@
     records.unshift(record);
     localStorage.setItem('vacationRecords', JSON.stringify(records));
     updateBadge();
-    
+
     document.getElementById('empName').value = '';
     document.getElementById('countryInput1').value = '';
     document.getElementById('countryInput2').value = '';
     document.getElementById('countryInput3').value = '';
     document.querySelectorAll('.permit-warning').forEach(el => el.style.display = 'none');
-    
+
     showSaveMsg(`✅ تم حفظ إجازة "${name}" بنجاح`, 'success');
     setTimeout(() => { document.getElementById('saveMsg').className = 'save-msg'; }, 3000);
   }
@@ -1353,7 +1229,8 @@
         <td>${formatDate(r.startDate)}</td><td>${formatDate(r.endDate)}</td><td>${formatDate(r.returnDate)}</td><td>${r.days}</td>
         <td><div class="row-actions">
           <button class="row-action-btn print" onclick="printIndividual(${r.id})" title="طباعة">🖨️</button>
-          <button class="row-action-btn pdf" onclick="downloadPDF(${r.id})" title="PDF">📄</button>
+          <button class="row-action-btn pdf" onclick="downloadPDF(${r.id}, this)" title="PDF">📄</button>
+          <button class="row-action-btn share-pdf" onclick="sharePDF(${r.id}, this)" title="مشاركة PDF">📤</button>
           <button class="row-action-btn calendar" onclick="addToCalendar(${r.id})" title="إضافة للتقويم">📅</button>
           <button class="row-action-btn edit" onclick="loadRecordForEdit(${r.id})" title="تعديل">✏️</button>
           <button class="row-action-btn delete" onclick="deleteRecord(${r.id})" title="حذف">🗑️</button>
@@ -1363,58 +1240,33 @@
     body.innerHTML = html;
   }
 
-  // ==========================================
-  // ✏️ تحميل السجل للتعديل في الصفحة الرئيسية
-  // ==========================================
   function loadRecordForEdit(recordId) {
     const record = records.find(r => r.id === recordId);
     if (!record) { showToast('❌ السجل غير موجود', 'error'); return; }
-    
-    // إغلاق النوافذ المنبذلة إن وجدت
     closeRecordsModal();
     closeIndividualModal();
-    
     editingRecordId = recordId;
-    
-    // تعبئة الحقول بالبيانات الحالية
     document.getElementById('empName').value = record.name;
-    
     const countries = record.countries.split(/[,،]/).map(c => c.trim()).filter(c => c && c !== '—');
     document.getElementById('countryInput1').value = countries[0] || '';
     document.getElementById('countryInput2').value = countries[1] || '';
     document.getElementById('countryInput3').value = countries[2] || '';
-    
     document.getElementById('days').value = record.days;
-    
-    // تحميل التاريخ في التقويم
     const startDate = new Date(record.startDate);
     selectedDate = startDate;
     viewYear = startDate.getFullYear();
     viewMonth = startDate.getMonth();
-    
-    // إعادة حساب التواريخ
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + (record.days - 1));
     lastEndDate = endDate;
     lastReturnDate = getFirstWorkday(endDate);
-    
-    // تحديث عرض المعلومات
     const info = document.getElementById('selectedInfo');
     info.innerHTML = `✅ البداية: <span style="color:var(--accent-dark);margin-right:5px;">${dayNames[startDate.getDay()]} ${startDate.getDate()} ${monthNames[startDate.getMonth()]} ${startDate.getFullYear()}</span>`;
-    
-    // تفعيل زر الحفظ
     updateSaveButton();
-    
-    // تحديث واجهة وضع التعديل
     enterEditMode(record.name);
-    
-    // إعادة رسم التقويم والنتائج
     renderCalendar();
     calculate();
-    
-    // التمرير لأعلى الصفحة
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
     showToast(`📝 تم تحميل سجل "${record.name}" للتعديل`, 'info', 3000);
   }
 
@@ -1423,10 +1275,8 @@
     const saveBtn = document.getElementById('saveBtn');
     const saveSection = document.getElementById('saveSection');
     const saveTitleText = document.getElementById('saveTitleText');
-    
     document.getElementById('editModeName').textContent = name;
     bar.classList.add('show');
-    
     saveBtn.innerHTML = '🔄 تحديث البيانات';
     saveBtn.classList.add('edit-mode');
     saveSection.classList.add('edit-mode');
@@ -1438,10 +1288,8 @@
     const saveBtn = document.getElementById('saveBtn');
     const saveSection = document.getElementById('saveSection');
     const saveTitleText = document.getElementById('saveTitleText');
-    
     bar.classList.remove('show');
     editingRecordId = null;
-    
     saveBtn.innerHTML = '💾 حفظ في قائمة المتقدمين';
     saveBtn.classList.remove('edit-mode');
     saveSection.classList.remove('edit-mode');
@@ -1450,23 +1298,20 @@
 
   function cancelEditMode() {
     if (!confirm('⚠️ هل أنت متأكد من إلغاء التعديل؟\nسيتم فقدان التغييرات غير المحفوظة.')) return;
-    
-    // إعادة الحقول إلى الوضع الافتراضي
     document.getElementById('empName').value = '';
     document.getElementById('countryInput1').value = '';
     document.getElementById('countryInput2').value = '';
     document.getElementById('countryInput3').value = '';
     document.querySelectorAll('.permit-warning').forEach(el => el.style.display = 'none');
     document.getElementById('saveMsg').className = 'save-msg';
-    
     exitEditMode();
     showToast('❌ تم إلغاء وضع التعديل', 'info', 2000);
   }
 
   function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+
   function deleteRecord(id) {
     if (!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
-    // إذا كان السجل المحذوف هو الذي يتم تعديله حالياً، الخروج من وضع التعديل
     if (editingRecordId === id) {
       exitEditMode();
       document.getElementById('empName').value = '';
@@ -1478,13 +1323,12 @@
     localStorage.setItem('vacationRecords', JSON.stringify(records));
     updateBadge(); renderRecords();
   }
+
   function clearAllRecords() {
     if (!confirm('⚠️ سيتم حذف جميع السجلات نهائياً. هل أنت متأكد؟')) return;
     records = []; localStorage.setItem('vacationRecords', JSON.stringify(records));
     updateBadge(); renderRecords();
-    if (editingRecordId !== null) {
-      exitEditMode();
-    }
+    if (editingRecordId !== null) exitEditMode();
   }
 
   function exportJSON() {
@@ -1532,7 +1376,7 @@
   function needsSpecialPermit(countriesStr) {
     if (!countriesStr || countriesStr === '—') return false;
     const countries = countriesStr.split(/[,،]/).map(c => c.trim());
-    return countries.some(country => 
+    return countries.some(country =>
       specialPermitCountries.some(sp => normalizeArabic(sp) === normalizeArabic(country))
     );
   }
@@ -1556,12 +1400,10 @@
       return { name: record.name, countries: record.countries, startDate: new Date(record.startDate), endDate: new Date(record.endDate), returnDate: new Date(record.returnDate), days: record.days, submittedAt: new Date(record.submittedAt) };
     }
     if (!selectedDate || !lastEndDate || !lastReturnDate) { showToast('⚠️ قم بحساب الإجازة أولاً', 'error'); return null; }
-    
     const c1 = document.getElementById('countryInput1').value.trim();
     const c2 = document.getElementById('countryInput2').value.trim();
     const c3 = document.getElementById('countryInput3').value.trim();
     const countries = [c1, c2, c3].filter(c => c !== '').join('، ') || '—';
-    
     return { name: document.getElementById('empName').value.trim() || '—', countries, startDate: selectedDate, endDate: lastEndDate, returnDate: lastReturnDate, days: parseInt(document.getElementById('days').value), submittedAt: new Date() };
   }
 
@@ -1570,7 +1412,7 @@
     const formatFull = (d) => `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
     const skipped = countSkippedWeekends(data.endDate, data.returnDate);
     const hasSpecialPermit = needsSpecialPermit(data.countries);
-    
+
     let permitStatusHtml = '';
     if (!hidePermitWarnings && hasSpecialPermit) {
       permitStatusHtml = `
@@ -1580,7 +1422,7 @@
         </div>
       `;
     }
-    
+
     const permitStatusIndicator = `
       <div class="print-row" style="background: ${hidePermitWarnings ? '#f0f0f0' : (hasSpecialPermit ? '#fff3cd' : '#d4edda')}; border-radius: 6px; margin-top: 8px; padding: 8px 12px;">
         <span class="label" style="font-size: 12px;">🔐 حالة التصريح الخاص</span>
@@ -1622,21 +1464,13 @@
   function addToCalendar(recordId = null) {
     const data = getVacationData(recordId);
     if (!data) return;
-
-    const formatDateICS = (d) => {
-      return d.getFullYear().toString() +
-             (d.getMonth() + 1).toString().padStart(2, '0') +
-             d.getDate().toString().padStart(2, '0');
-    };
-
+    const formatDateICS = (d) => d.getFullYear().toString() + (d.getMonth() + 1).toString().padStart(2, '0') + d.getDate().toString().padStart(2, '0');
     const returnDate = new Date(data.returnDate);
     const dayAfterReturn = new Date(returnDate);
     dayAfterReturn.setDate(dayAfterReturn.getDate() + 1);
-
     const title = `🔔 العودة للدوام: ${data.name}`;
     const description = `تذكير بالعودة للدوام بعد إجازة سنوية.\\nالمدة: ${data.days} أيام.\\nالدول: ${data.countries}\\nتم الإنشاء بواسطة حاسبة الإجازات - Muharraqi`;
     const location = data.countries || 'غير محدد';
-
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Muharraqi//Vacation Calculator//AR
@@ -1655,7 +1489,6 @@ DESCRIPTION:تذكير بالعودة للدوام غداً
 END:VALARM
 END:VEVENT
 END:VCALENDAR`;
-
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
     const isAndroid = /android/i.test(userAgent);
@@ -1668,68 +1501,31 @@ END:VCALENDAR`;
       const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `تذكير_العودة.ics`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      a.href = url; a.download = `تذكير_العودة.ics`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast('📱 اختر "إضافة إلى التقويم" من القائمة', 'success', 4000);
     } else {
       const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `تذكير_العودة_${data.name.replace(/\s+/g, '_')}.ics`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      a.href = url; a.download = `تذكير_العودة_${data.name.replace(/\s+/g, '_')}.ics`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast('📅 تم تحميل الملف. افتحه لإضافته للتقويم', 'success', 3000);
     }
   }
 
-  async function generatePDF(data) {
-    const tempDiv = document.createElement('div');
-    tempDiv.style.position = 'fixed'; tempDiv.style.top = '-9999px'; tempDiv.style.left = '-9999px';
-    tempDiv.style.width = '600px'; tempDiv.style.background = '#fff'; tempDiv.style.padding = '20px';
-    tempDiv.innerHTML = buildIndividualCard(data);
-    document.body.appendChild(tempDiv);
-    try {
-      const element = tempDiv.querySelector('#printCardContent');
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
-      const imgData = canvas.toDataURL('image/png');
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const imgWidth = pdfWidth - 20;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-      pdf.save(`إجازة_${data.name.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, '_')}_${data.startDate.toISOString().split('T')[0]}.pdf`);
-    } catch (err) { console.error('PDF Error:', err); showToast('❌ خطأ في PDF', 'error'); }
-    finally { document.body.removeChild(tempDiv); }
-  }
-
-  async function downloadPDF(recordId = null) {
-    const data = getVacationData(recordId); if (!data) return;
-    let btn = recordId !== null ? event.target.closest('button') : document.querySelector('.action-btn.pdf');
-    let originalHTML = btn ? btn.innerHTML : '';
-    if (btn) { btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true; }
-    await generatePDF(data);
-    if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-  }
-
   function shareVacation(recordId = null) {
     const data = getVacationData(recordId); if (!data) return;
-    let btn = recordId !== null ? event.target.closest('button') : document.querySelector('.action-btn.share');
-    let originalHTML = btn ? btn.innerHTML : '';
+    const btn = recordId !== null ? (window.event && event.target && event.target.closest('button')) : document.querySelector('.action-btn.share');
+    const originalHTML = btn ? btn.innerHTML : '';
     if (btn) { btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true; }
     try {
       const format = (d) => `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
       const hasSpecialPermit = needsSpecialPermit(data.countries);
       const permitWarningText = (!hidePermitWarnings && hasSpecialPermit) ? '\n⚠️ تنويه: تحتوي هذه الوجهة على دول تحتاج إلى تصريح خاص' : '';
-      
-      const shareText = `📅 تقرير إجازة سنوية\n\n👤 الاسم: ${data.name}\n🌍 الدولة/الدول: ${data.countries}${permitWarningText}\n📅 بداية الإجازة: ${dayNames[data.startDate.getDay()]} ${format(data.startDate)}\n🏁 نهاية الإجازة: ${dayNames[data.endDate.getDay()]} ${format(data.endDate)}\n💼 أول يوم دوام: ${dayNames[data.returnDate.getDay()]} ${format(data.returnDate)}\n⏱️ المدة: ${data.days} يوم\n🔐 حالة التصريح الخاص: ${hidePermitWarnings ? 'معطل' : (hasSpecialPermit ? 'مفعل - يحتاج تصريح' : 'مفعل - لا يحتاج')}\n\n─────────────\n© ${new Date().getFullYear()} Muharraqi - حاسبة الإجازات السنوية`;
+      const shareText = `📅 تقرير إجازة سنوية\n\n👤 الاسم: ${data.name}\n🌍 الدولة/الدول: ${data.countries}${permitWarningText}\n📅 بداية الإجازة: ${dayNames[data.startDate.getDay()]} ${format(data.startDate)}\n🏁 نهاية الإجازة: ${dayNames[data.endDate.getDay()]} ${format(data.endDate)}\n💼 أول يوم دوام: ${dayNames[data.returnDate.getDay()]} ${format(data.returnDate)}\n⏱️ المدة: ${data.days} يوم\n🔐 حالة التصريح الخاص: ${hidePermitWarnings ? 'معطل' : (hasSpecialPermit ? 'مفعل - يحتاج تصريح' : 'مفعّل - لا يحتاج')}\n\n─────────────\n© ${new Date().getFullYear()} Muharraqi - حاسبة الإجازات السنوية`;
       window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
       showToast('📱 تم فتح واتساب', 'success', 3000);
     } catch (err) { showToast('❌ حدث خطأ أثناء المشاركة', 'error'); }
