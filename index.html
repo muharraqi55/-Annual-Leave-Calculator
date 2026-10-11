@@ -316,21 +316,150 @@
   .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ============================================================
+     🖨️ إصلاح تنسيق الطباعة بالكامل
+     ============================================================ */
   @media print {
-    body { background: #fff !important; padding: 0; }
-    .top-bar, .card, .site-footer, .modal-overlay:not(.print-mode):not(.print-individual-mode), .modal-footer, .modal-close, .toast, .edit-mode-bar { display: none !important; }
-    .modal-overlay.print-mode, .modal-overlay.print-individual-mode { position: static; background: #fff !important; backdrop-filter: none; display: block !important; padding: 0; }
-    .modal-overlay.print-mode .modal, .modal-overlay.print-individual-mode .modal { max-height: none; box-shadow: none; max-width: 100%; animation: none; background: #fff; }
+    @page { size: A4 portrait; margin: 10mm; }
+
+    html, body {
+      background: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      min-height: auto !important;
+      display: block !important;
+      width: 100% !important;
+      overflow: visible !important;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+
+    /* إخفاء عناصر الواجهة غير المطلوبة */
+    .top-bar, .card, .site-footer, .modal-footer, .modal-close, .toast, .edit-mode-bar {
+      display: none !important;
+    }
+
+    /* إخفاء أي نافذة غير مخصصة للطباعة */
+    .modal-overlay:not(.print-mode):not(.print-individual-mode) {
+      display: none !important;
+    }
+
+    /* إظهار النافذة المخصصة للطباعة بشكل كامل */
+    .modal-overlay.print-mode,
+    .modal-overlay.print-individual-mode {
+      position: static !important;
+      inset: auto !important;
+      display: block !important;
+      background: #fff !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      padding: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      animation: none !important;
+    }
+
+    .modal-overlay.print-mode .modal,
+    .modal-overlay.print-individual-mode .modal {
+      display: block !important;
+      max-height: none !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      background: #fff !important;
+      overflow: visible !important;
+      animation: none !important;
+    }
+
     .modal-header, .modal-footer { display: none !important; }
-    .modal-body { padding: 0; overflow: visible; }
-    .print-header-report { display: block !important; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px double #333; }
-    .print-header-report h1 { color: #333 !important; font-size: 22px; margin-bottom: 5px; }
-    .print-header-report p { color: #666 !important; font-size: 12px; }
-    .records-table { font-size: 11px; }
-    .records-table th { background: #f0f0f0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .records-table td { color: #000 !important; }
+
+    .modal-body {
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: visible !important;
+      max-height: none !important;
+      flex: none !important;
+    }
+
+    /* بطاقة الإجازة الفردية */
+    .print-card {
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 30px !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      background: #fff !important;
+      color: #000 !important;
+    }
+    .print-card-header { page-break-after: avoid; break-after: avoid; }
+    .print-card-body { page-break-inside: auto; }
+    .print-row {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+    }
+    .print-row .label { flex: 0 0 auto; }
+    .print-row .value { flex: 1 1 auto; text-align: left; }
+    .print-card-footer {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    /* ترويسة تقرير السجلات */
+    .print-header-report {
+      display: block !important;
+      text-align: center;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 3px double #333;
+    }
+    .print-header-report h1 { color: #333 !important; font-size: 20px; margin-bottom: 5px; }
+    .print-header-report p { color: #666 !important; font-size: 11px; }
+
+    /* جدول السجلات */
+    .records-table {
+      font-size: 10.5px !important;
+      width: 100% !important;
+      border-collapse: collapse !important;
+      page-break-inside: auto;
+    }
+    .records-table thead { display: table-header-group; }
+    .records-table tr {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    .records-table th {
+      background: #f0f0f0 !important;
+      color: #000 !important;
+      border: 1px solid #ccc !important;
+      position: static !important;
+    }
+    .records-table td {
+      color: #000 !important;
+      border: 1px solid #ddd !important;
+    }
     .row-actions { display: none !important; }
-    .print-footer-report { display: block !important; margin-top: 20px; padding-top: 15px; border-top: 1px solid #999; text-align: center; font-size: 11px; color: #666; }
+
+    .print-footer-report {
+      display: block !important;
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid #999;
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+    }
   }
   .print-header-report, .print-footer-report { display: none; }
 
@@ -611,6 +740,7 @@
 
   // ======================================================
   // 🎨 ستايلات الـ PDF المستقلة (تُدمج داخل الحاوية عبر DOMParser)
+  // تم إصلاح ترتيب الصفوف وضبط اتجاه النص بشكل صحيح
   // ======================================================
   const PDF_STYLES = `
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
@@ -620,10 +750,10 @@
     .print-card-header h2 { color:#4a3f8c; font-size:22px; margin-bottom:4px; }
     .print-card-header .sub { color:#777; font-size:13px; }
     .print-card-body { padding:15px 0; }
-    .print-row { display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px dashed #e0e0e0; align-items:center; }
+    .print-row { display:flex; flex-direction:row; justify-content:space-between; align-items:center; gap:14px; padding:12px 0; border-bottom:1px dashed #e0e0e0; }
     .print-row:last-child { border-bottom:none; }
-    .print-row .label { color:#777; font-size:14px; font-weight:bold; }
-    .print-row .value { color:#333; font-size:15px; font-weight:bold; text-align:left; }
+    .print-row .label { color:#777; font-size:14px; font-weight:bold; flex:0 0 auto; white-space:nowrap; }
+    .print-row .value { color:#333; font-size:15px; font-weight:bold; text-align:left; flex:1 1 auto; word-wrap:break-word; word-break:break-word; }
     .print-row.highlight { background:#f0f4ff; margin:8px -15px; padding:12px 15px; border-radius:8px; border-bottom:none; }
     .print-row.highlight .value { color:#27ae60; font-size:17px; }
     .print-row.end .value { color:#4a3f8c; font-size:17px; }
@@ -632,6 +762,8 @@
 
   // ======================================================
   // 📄 مولّد PDF بالطريقة المطلوبة (حاوية مرئية + DOMParser + طبقة معتمة + A4 متعدد)
+  // تم إصلاح: ضبط عرض الحاوية ليطابق عرض البطاقة تماماً (600px)
+  // وحذف windowWidth/windowHeight لتجنب قصّ المحتوى من الجانب
   // ======================================================
   async function generatePDFBlob(data) {
     await ensurePdfLibs();
@@ -664,16 +796,19 @@
     const bodyHtml = parsed.body.innerHTML;
 
     // (3) حاوية مرئية فعلاً في DOM (position:fixed; top:0; left:0; z-index عالٍ)
+    // ✅ الإصلاح: العرض 600px ليطابق عرض البطاقة تماماً (بدون إزاحة أو قص)
     const container = document.createElement('div');
     container.id = 'pdfRenderContainer';
     container.style.cssText = [
       'position:fixed','top:0','left:0',
       'z-index:2147483645',
-      'width:800px','background:#fff','padding:0',
+      'width:600px','min-width:600px','max-width:600px',
+      'background:#ffffff','padding:0','margin:0',
       'direction:rtl'
     ].join(';');
     styles.forEach(s => container.appendChild(s.cloneNode(true)));
     const inner = document.createElement('div');
+    inner.style.cssText = 'width:600px;padding:0;margin:0;background:#ffffff;';
     inner.innerHTML = bodyHtml;
     container.appendChild(inner);
     document.body.appendChild(container);
@@ -682,13 +817,14 @@
       // (6) انتظر 500ms قبل html2canvas
       await new Promise(r => setTimeout(r, 500));
 
-      const element = container.querySelector('#printCardContent') || container.firstElementChild;
+      const element = container.querySelector('#printCardContent') || container.querySelector('.print-card') || inner;
 
       // (7) احسب scale ديناميكياً
       const targetPx = 1200;
-      const dynamicScale = Math.min(2, Math.max(0.8, targetPx / element.scrollWidth));
+      const elWidth = element.scrollWidth || 600;
+      const dynamicScale = Math.min(2, Math.max(0.8, targetPx / elWidth));
 
-      // (8) استخدم scrollX:0, scrollY:0
+      // (8) استخدم scrollX:0, scrollY:0 — بدون windowWidth/windowHeight لتجنب القص
       const canvas = await html2canvas(element, {
         scale: dynamicScale,
         useCORS: true,
@@ -696,9 +832,7 @@
         backgroundColor: '#ffffff',
         logging: false,
         scrollX: 0,
-        scrollY: 0,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight
+        scrollY: 0
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -1416,7 +1550,7 @@
     let permitStatusHtml = '';
     if (!hidePermitWarnings && hasSpecialPermit) {
       permitStatusHtml = `
-        <div class="print-row" style="background: #ffe5e5; border: 1px solid #c0392b; border-radius: 8px; margin-top: 10px;">
+        <div class="print-row" style="background: #ffe5e5; border: 1px solid #c0392b; border-radius: 8px; margin-top: 10px; padding: 12px 15px;">
           <span class="label" style="color: #c0392b;">⚠️ تنويه هام</span>
           <span class="value" style="color: #c0392b; font-size: 14px;">تحتوي هذه الوجهة على دول تحتاج إلى <strong>تصريح خاص</strong></span>
         </div>
@@ -1424,7 +1558,7 @@
     }
 
     const permitStatusIndicator = `
-      <div class="print-row" style="background: ${hidePermitWarnings ? '#f0f0f0' : (hasSpecialPermit ? '#fff3cd' : '#d4edda')}; border-radius: 6px; margin-top: 8px; padding: 8px 12px;">
+      <div class="print-row" style="background: ${hidePermitWarnings ? '#f0f0f0' : (hasSpecialPermit ? '#fff3cd' : '#d4edda')}; border-radius: 6px; margin-top: 8px; padding: 8px 12px; border-bottom: none;">
         <span class="label" style="font-size: 12px;">🔐 حالة التصريح الخاص</span>
         <span class="value" style="font-size: 12px; color: ${hidePermitWarnings ? '#6c757d' : (hasSpecialPermit ? '#856404' : '#155724')};">${hidePermitWarnings ? 'معطل' : (hasSpecialPermit ? 'مفعل - يحتاج تصريح' : 'مفعل - لا يحتاج')}</span>
       </div>
